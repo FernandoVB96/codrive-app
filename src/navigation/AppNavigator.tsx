@@ -5,13 +5,13 @@ import HomeScreen from "../screens/HomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
-import SplashScreen from "../screens/SplashScreen"; // 🆕 Importamos la pantalla de carga
-import { AuthContext } from "../auth/AuthContext"; // 🆕 Importamos el contexto
+import SplashScreen from "../screens/SplashScreen";
+import { AuthContext } from "../auth/AuthContext";
 
 const Stack = createStackNavigator();
 
 const AppNavigation = () => {
-  const { token, loading } = useContext(AuthContext); // 🧠 Obtenemos estado de auth
+  const { token, loading } = useContext(AuthContext);
 
   if (loading) {
     return <SplashScreen />; // ⏳ Mientras se carga el token
