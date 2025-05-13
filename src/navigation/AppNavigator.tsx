@@ -1,20 +1,37 @@
 // src/navigation/AppNavigation.tsx
-import React from "react";
+import React, { useContext } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import HomeScreen from "../screens/HomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import LoginScreen from "../screens/LoginScreen";
-import RegisterScreen from "../screens/RegisterScreen";  // Importamos RegisterScreen
+import RegisterScreen from "../screens/RegisterScreen";
+import SplashScreen from "../screens/SplashScreen"; // 🆕 Importamos la pantalla de carga
+import { AuthContext } from "../auth/AuthContext"; // 🆕 Importamos el contexto
 
 const Stack = createStackNavigator();
 
 const AppNavigation = () => {
+  const { token, loading } = useContext(AuthContext); // 🧠 Obtenemos estado de auth
+
+  if (loading) {
+    return <SplashScreen />; // ⏳ Mientras se carga el token
+  }
+
   return (
-    <Stack.Navigator initialRouteName="Home">
-      <Stack.Screen name="Home" component={HomeScreen} />
-      <Stack.Screen name="Profile" component={ProfileScreen} />
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Register" component={RegisterScreen} />  {/* Agregamos la ruta */}
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {token ? (
+        // ✅ Si hay token, usuario logueado: Home y Profile
+        <>
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+        </>
+      ) : (
+        // ❌ Si no hay token, usuario no logueado: Login y Register
+        <>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+        </>
+      )}
     </Stack.Navigator>
   );
 };
