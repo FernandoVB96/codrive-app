@@ -1,7 +1,8 @@
+// src/auth/AuthProvider.tsx
 import React, { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from "./AuthContext";
-import { login as loginService } from "../services/AuthService";
+import { login as loginService, register as registerService } from "../services/AuthService";
 
 export const AuthProvider = ({ children }: any) => {
   const [token, setToken] = useState<string | null>(null);
@@ -25,6 +26,13 @@ export const AuthProvider = ({ children }: any) => {
     await AsyncStorage.setItem("token", token);
   };
 
+  const register = async (nombre: string, email: string, password: string) => {
+    const { token, user } = await registerService(nombre, email, password);
+    setToken(token);
+    setUser(user);
+    await AsyncStorage.setItem("token", token);
+  };
+
   const logout = async () => {
     setToken(null);
     setUser(null);
@@ -32,7 +40,7 @@ export const AuthProvider = ({ children }: any) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
