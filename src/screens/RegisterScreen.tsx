@@ -16,7 +16,7 @@ const RegisterScreen = () => {
     try {
       await register(nombre, email, password);
       Alert.alert("Registro exitoso", "Has sido registrado correctamente.");
-      navigation.replace("Home"); // ✅ Redirigir tras registro
+      navigation.replace("Home");
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "No se pudo registrar el usuario.");

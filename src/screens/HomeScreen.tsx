@@ -21,7 +21,7 @@ const HomeScreen = () => {
     <View className="flex-1 justify-center items-center bg-white px-6">
       <Text className="text-2xl font-bold mb-4">Bienvenido 👋</Text>
       <Text className="text-lg mb-6">
-        {user ? `Hola, ${user.nombre || "usuario"}!` : "Usuario no disponible"}
+        {user ? `Hola, ${user.nombre ?? "usuario"}!` : "Usuario no disponible"}
       </Text>
 
       <TouchableOpacity

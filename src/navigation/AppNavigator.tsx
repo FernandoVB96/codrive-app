@@ -14,7 +14,7 @@ const AppNavigation = () => {
   const { token, loading } = useContext(AuthContext);
 
   if (loading) {
-    return <SplashScreen />; // ⏳ Mientras se carga el token
+    return <SplashScreen />;
   }
 
   return (

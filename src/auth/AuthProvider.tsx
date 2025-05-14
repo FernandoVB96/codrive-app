@@ -1,10 +1,8 @@
-// src/auth/AuthProvider.tsx
-import React, { useState, useEffect } from "react";
+// src/auth/AuthProvider.ts
+import React, { useState, useEffect, useMemo } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from "./AuthContext";
-import { login as loginService, getCurrentUser } from "../services/AuthService";
-import { register as registerService } from "../services/AuthService";
-
+import { login as loginService, register as registerService, getCurrentUser } from "../services/AuthService";
 
 export const AuthProvider = ({ children }: any) => {
   const [token, setToken] = useState<string | null>(null);
@@ -19,10 +17,10 @@ export const AuthProvider = ({ children }: any) => {
         setToken(savedToken);
 
         try {
-          const currentUser = await getCurrentUser(); // 🔥 Nuevo endpoint
+          const currentUser = await getCurrentUser(savedToken);
           setUser(currentUser);
         } catch (error) {
-          console.log("Token inválido, cerrando sesión");
+          console.log("Token inválido o error al obtener el usuario", error);
           await AsyncStorage.removeItem("token");
           setToken(null);
         }
@@ -35,10 +33,15 @@ export const AuthProvider = ({ children }: any) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const { token, user } = await loginService(email, password);
+    const { token } = await loginService(email, password);
     setToken(token);
-    setUser(user);
     await AsyncStorage.setItem("token", token);
+    try {
+      const currentUser = await getCurrentUser(token);
+      setUser(currentUser);
+    } catch (error) {
+      console.error("Error al obtener usuario en login:", error);
+    }
   };
 
   const logout = async () => {
@@ -46,18 +49,32 @@ export const AuthProvider = ({ children }: any) => {
     setUser(null);
     await AsyncStorage.removeItem("token");
   };
-  const register = async (nombre: string, email: string, password: string) => {
-  const { token, user } = await registerService(nombre, email, password);
-  setToken(token);
-  setUser(user);
-  await AsyncStorage.setItem("token", token);
-};
 
+  const register = async (nombre: string, email: string, password: string) => {
+    const { token } = await registerService(nombre, email, password);
+    setToken(token);
+    await AsyncStorage.setItem("token", token);
+    try {
+      const currentUser = await getCurrentUser(token);
+      setUser(currentUser);
+    } catch (error) {
+      console.error("Error al obtener usuario después del registro:", error);
+    }
+  };
+
+  // Memoizamos el contexto para evitar re-renderizados innecesarios
+  const value = useMemo(() => ({
+    user,
+    token,
+    login,
+    logout,
+    register,
+    loading,
+  }), [user, token, loading]);
 
   return (
-      <AuthContext.Provider value={{ user, token, login, logout, register, loading }}>
-        {children}
-      </AuthContext.Provider>
-
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
   );
 };

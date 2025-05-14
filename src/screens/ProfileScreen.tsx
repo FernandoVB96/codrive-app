@@ -13,7 +13,6 @@ const ProfileScreen = () => {
         <>
           <Text className="text-lg mb-2">Nombre: {user.nombre}</Text>
           <Text className="text-lg mb-2">Email: {user.email}</Text>
-          {/* Aquí puedes agregar más campos si los tienes */}
         </>
       ) : (
         <Text className="text-lg mb-6">Usuario no disponible</Text>
