@@ -1,25 +1,80 @@
-// src/navigation/Navigation.tsx
 import React, { useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { AuthContext } from "../auth/AuthContext";
-import AppStack from "./AppStack";
-import AuthStack from "./AuthStack";
+import HomeScreen from "../screens/HomeScreen";
+import ProfileScreen from "../screens/ProfileScreen";
+import LoginScreen from "../screens/LoginScreen"; // Nueva pantalla de Login
+import RegisterScreen from "../screens/RegisterScreen"; // Nueva pantalla de Registro
+import ViajeScreen from "../screens/ViajeScreen";
 import { ActivityIndicator, View } from "react-native";
+import Icon from 'react-native-vector-icons/Ionicons';
+
+const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+// Pantalla que se muestra mientras se está cargando el estado de la sesión
+const LoadingScreen = () => (
+  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <ActivityIndicator size="large" color="#0000ff" />
+  </View>
+);
+
+const AuthStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+    </Stack.Navigator>
+  );
+};
+
+
+const MainStack = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        tabBarStyle: { backgroundColor: '#1f2937' },
+        tabBarActiveTintColor: 'white',
+        tabBarInactiveTintColor: 'gray',
+      }}
+    >
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => <Icon name="home" color={color} size={size} />
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => <Icon name="person" color={color} size={size} />
+        }}
+      />
+      <Tab.Screen
+        name="Viaje"
+        component={ViajeScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => <Icon name="airplane" color={color} size={size} />
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
 
 const Navigation = () => {
-  const { token, loading } = useContext(AuthContext);
+  const { loading, user } = useContext(AuthContext);
 
   if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (
     <NavigationContainer>
-      {token ? <AppStack /> : <AuthStack />}
+      {user ? <MainStack /> : <AuthStack />}
     </NavigationContainer>
   );
 };

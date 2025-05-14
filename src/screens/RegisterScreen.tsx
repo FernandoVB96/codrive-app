@@ -1,6 +1,15 @@
 // src/screens/RegisterScreen.tsx
 import React, { useState, useContext } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+} from "react-native";
 import { AuthContext } from "../auth/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -24,39 +33,73 @@ const RegisterScreen = () => {
   };
 
   return (
-    <View className="flex-1 justify-center items-center bg-white px-6">
-      <Text className="text-2xl font-bold mb-6">Registrarse</Text>
+    <SafeAreaView style={{ flex: 1 }}>
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
+      <View style={styles.container}>
+        <Text style={styles.title}>Registrarse</Text>
 
-      <TextInput
-        placeholder="Nombre"
-        className="border border-gray-300 w-full mb-4 p-3 rounded"
-        onChangeText={setNombre}
-        value={nombre}
-      />
+        <TextInput
+          placeholder="Nombre"
+          style={styles.input}
+          onChangeText={setNombre}
+          value={nombre}
+        />
 
-      <TextInput
-        placeholder="Correo electrónico"
-        className="border border-gray-300 w-full mb-4 p-3 rounded"
-        onChangeText={setEmail}
-        value={email}
-      />
+        <TextInput
+          placeholder="Correo electrónico"
+          style={styles.input}
+          onChangeText={setEmail}
+          value={email}
+        />
 
-      <TextInput
-        placeholder="Contraseña"
-        secureTextEntry
-        className="border border-gray-300 w-full mb-4 p-3 rounded"
-        onChangeText={setPassword}
-        value={password}
-      />
+        <TextInput
+          placeholder="Contraseña"
+          secureTextEntry
+          style={styles.input}
+          onChangeText={setPassword}
+          value={password}
+        />
 
-      <TouchableOpacity
-        onPress={handleRegister}
-        className="bg-green-500 w-full p-3 rounded"
-      >
-        <Text className="text-white text-center font-semibold">Registrarse</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity onPress={handleRegister} style={styles.button}>
+          <Text style={styles.buttonText}>Registrarse</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white",
+    paddingHorizontal: 24,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 24,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    width: "100%",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  button: {
+    backgroundColor: "#22C55E",
+    width: "100%",
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "600",
+  },
+});
 
 export default RegisterScreen;

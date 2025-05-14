@@ -1,6 +1,5 @@
-// src/screens/HomeScreen.tsx
 import React, { useContext } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar } from "react-native";
 import { AuthContext } from "../auth/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -11,37 +10,52 @@ const HomeScreen = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "Login" }],
-    });
   };
 
   return (
-    <View className="flex-1 justify-center items-center bg-white px-6">
-      <Text className="text-2xl font-bold mb-4">Bienvenido 👋</Text>
-      <Text className="text-lg mb-6">
-        {user ? `Hola, ${user.nombre ?? "usuario"}!` : "Usuario no disponible"}
-      </Text>
+    // SafeAreaView envuelve toda la pantalla para evitar que el contenido se sobreponga a la barra de estado.
+    <SafeAreaView style={{ flex: 1 }}>
+      {/* Controlamos el estilo de la barra de estado para mejorar la visibilidad */}
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
 
-      <TouchableOpacity
-        className="bg-blue-500 w-full p-3 rounded mb-4"
-        onPress={() => navigation.navigate("Profile")}
-      >
-        <Text className="text-white text-center font-semibold">
-          Ir a Perfil
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 20 }}>
+        <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16 }}>Bienvenido 👋</Text>
+        <Text style={{ fontSize: 18, marginBottom: 24 }}>
+          {user ? `Hola, ${user.nombre ?? "usuario"}!` : "Usuario no disponible"}
         </Text>
-      </TouchableOpacity>
 
-      <TouchableOpacity
-        className="bg-red-500 w-full p-3 rounded"
-        onPress={handleLogout}
-      >
-        <Text className="text-white text-center font-semibold">
-          Cerrar sesión
-        </Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          style={{
+            backgroundColor: "#3B82F6",
+            width: "100%",
+            paddingVertical: 14,
+            borderRadius: 8,
+            marginBottom: 16,
+            alignItems: "center",
+          }}
+          onPress={() => navigation.navigate("Profile")}
+        >
+          <Text style={{ color: "white", fontWeight: "600" }}>
+            Ir a Perfil
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={{
+            backgroundColor: "#EF4444",
+            width: "100%",
+            paddingVertical: 14,
+            borderRadius: 8,
+            alignItems: "center",
+          }}
+          onPress={handleLogout}
+        >
+          <Text style={{ color: "white", fontWeight: "600" }}>
+            Cerrar sesión
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 

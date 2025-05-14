@@ -1,30 +1,20 @@
-// src/screens/LoginScreen.tsx
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+import React, { useState, useContext } from "react";
+import { View, Text, TextInput, TouchableOpacity, Alert, SafeAreaView, StatusBar } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
-import { login, getCurrentUser } from "../services/AuthService";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthContext } from "../auth/AuthContext";
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState("demo@email.com");
-  const [password, setPassword] = useState("123456");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { login } = useContext(AuthContext);
 
   const handleLogin = async () => {
     try {
-      const token = await login(email, password);
-      console.log("Login exitoso con", email);
-
-      const user = await getCurrentUser(token);
-
-      await AsyncStorage.setItem("token", token);
-      await AsyncStorage.setItem("user", JSON.stringify(user));
-
-      navigation.navigate("Home");
-      
+      await login(email, password);
       Alert.alert("Éxito", "Sesión iniciada correctamente");
     } catch (err) {
       console.error("Error en el login:", err);
@@ -33,38 +23,70 @@ const LoginScreen = () => {
   };
 
   return (
-    <View className="flex-1 justify-center items-center bg-white px-6">
-      <Text className="text-2xl font-bold mb-6">Iniciar Sesión</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <StatusBar barStyle="dark-content" backgroundColor="white" />
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 20 }}>
+        <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 24 }}>Iniciar Sesión</Text>
 
-      <TextInput
-        placeholder="Correo electrónico"
-        className="border border-gray-300 w-full mb-4 p-3 rounded"
-        onChangeText={setEmail}
-        value={email}
-      />
+        <TextInput
+          placeholder="Correo electrónico"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          style={{
+            borderWidth: 1,
+            borderColor: "#D1D5DB",
+            width: "100%",
+            padding: 12,
+            marginBottom: 16,
+            borderRadius: 8,
+          }}
+        />
 
-      <TextInput
-        placeholder="Contraseña"
-        secureTextEntry
-        className="border border-gray-300 w-full mb-4 p-3 rounded"
-        onChangeText={setPassword}
-        value={password}
-      />
+        <TextInput
+          placeholder="Contraseña"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={{
+            borderWidth: 1,
+            borderColor: "#D1D5DB",
+            width: "100%",
+            padding: 12,
+            marginBottom: 24,
+            borderRadius: 8,
+          }}
+        />
 
-      <TouchableOpacity
-        onPress={handleLogin}
-        className="bg-blue-500 w-full p-3 rounded mb-4"
-      >
-        <Text className="text-white text-center font-semibold">Entrar</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            backgroundColor: "#3B82F6",
+            width: "100%",
+            paddingVertical: 14,
+            borderRadius: 8,
+            alignItems: "center",
+            marginBottom: 16,
+          }}
+          onPress={handleLogin}
+        >
+          <Text style={{ color: "white", fontWeight: "600" }}>Entrar</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate("Register")}
-        className="bg-gray-300 w-full p-3 rounded"
-      >
-        <Text className="text-center">¿No tienes cuenta? Regístrate</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          style={{
+            backgroundColor: "#E5E7EB",
+            width: "100%",
+            paddingVertical: 14,
+            borderRadius: 8,
+            alignItems: "center",
+          }}
+          onPress={() => navigation.navigate("Register")}
+        >
+          <Text style={{ fontWeight: "500" }}>¿No tienes cuenta? Regístrate</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 

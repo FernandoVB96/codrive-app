@@ -2,7 +2,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from "./AuthContext";
-import { login as loginService, register as registerService, getCurrentUser } from "../services/AuthService";
+import {
+  login as loginService,
+  register as registerService,
+  getCurrentUser,
+} from "../services/AuthService";
 
 export const AuthProvider = ({ children }: any) => {
   const [token, setToken] = useState<string | null>(null);
@@ -33,9 +37,10 @@ export const AuthProvider = ({ children }: any) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const { token } = await loginService(email, password);
+    const token = await loginService(email, password);
     setToken(token);
     await AsyncStorage.setItem("token", token);
+
     try {
       const currentUser = await getCurrentUser(token);
       setUser(currentUser);
@@ -44,16 +49,17 @@ export const AuthProvider = ({ children }: any) => {
     }
   };
 
-  const logout = async () => {
+  const logout = async (navigation?: any) => {
     setToken(null);
     setUser(null);
     await AsyncStorage.removeItem("token");
   };
 
   const register = async (nombre: string, email: string, password: string) => {
-    const { token } = await registerService(nombre, email, password);
+    const token = await registerService(nombre, email, password);
     setToken(token);
     await AsyncStorage.setItem("token", token);
+
     try {
       const currentUser = await getCurrentUser(token);
       setUser(currentUser);
@@ -62,15 +68,17 @@ export const AuthProvider = ({ children }: any) => {
     }
   };
 
-  // Memoizamos el contexto para evitar re-renderizados innecesarios
-  const value = useMemo(() => ({
-    user,
-    token,
-    login,
-    logout,
-    register,
-    loading,
-  }), [user, token, loading]);
+  const value = useMemo(
+    () => ({
+      user,
+      token,
+      login,
+      logout,
+      register,
+      loading,
+    }),
+    [user, token, loading]
+  );
 
   return (
     <AuthContext.Provider value={value}>
