@@ -8,6 +8,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   register: (nombre: string, email: string, password: string) => Promise<void>;
   loading: boolean;
+  setUser: (user: any) => void;  // <-- Agregado
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -17,4 +18,5 @@ export const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
   register: async () => {},
   loading: true,
+  setUser: () => {},
 });
