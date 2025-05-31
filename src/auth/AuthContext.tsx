@@ -18,5 +18,5 @@ export const AuthContext = createContext<AuthContextType>({
   logout: async () => {},
   register: async () => {},
   loading: true,
-  setUser: () => {},  // <-- Agregado
+  setUser: () => {},
 });
