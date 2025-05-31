@@ -11,21 +11,17 @@ import {
   StyleSheet,
 } from "react-native";
 import { AuthContext } from "../auth/AuthContext";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 const RegisterScreen = () => {
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { register } = useContext(AuthContext);
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const handleRegister = async () => {
     try {
       await register(nombre, email, password);
       Alert.alert("Registro exitoso", "Has sido registrado correctamente.");
-      navigation.replace("Home");
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "No se pudo registrar el usuario.");

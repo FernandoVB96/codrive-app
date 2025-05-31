@@ -3,11 +3,12 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { AuthContext } from "../auth/AuthContext";
-import HomeScreen from "../screens/HomeScreen";
 import ProfileScreen from "../screens/ProfileScreen";
-import LoginScreen from "../screens/LoginScreen"; // Nueva pantalla de Login
-import RegisterScreen from "../screens/RegisterScreen"; // Nueva pantalla de Registro
+import LoginScreen from "../screens/LoginScreen";
+import RegisterScreen from "../screens/RegisterScreen";
 import ViajeScreen from "../screens/ViajeScreen";
+import BuscarScreen from "../screens/BuscarScreen";
+import PublicarScreen from "../screens/PublicarScreen";
 import { ActivityIndicator, View } from "react-native";
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -38,32 +39,41 @@ const MainStack = () => {
         tabBarStyle: { backgroundColor: '#1f2937' },
         tabBarActiveTintColor: 'white',
         tabBarInactiveTintColor: 'gray',
+        headerShown: false,
       }}
     >
       <Tab.Screen
-        name="Home"
-        component={HomeScreen}
+        name="Viaje"
+        component={ViajeScreen}
         options={{
-          tabBarIcon: ({ color, size }) => <Icon name="home" color={color} size={size} />
+          tabBarIcon: ({ color, size }) => <Icon name="airplane" color={color} size={size} />,
+        }}
+      />
+      <Tab.Screen
+        name="Buscar"
+        component={BuscarScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => <Icon name="search" color={color} size={size} />,
+        }}
+      />
+      <Tab.Screen
+        name="Publicar"
+        component={PublicarScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => <Icon name="cloud-upload" color={color} size={size} />,
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarIcon: ({ color, size }) => <Icon name="person" color={color} size={size} />
-        }}
-      />
-      <Tab.Screen
-        name="Viaje"
-        component={ViajeScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <Icon name="airplane" color={color} size={size} />
+          tabBarIcon: ({ color, size }) => <Icon name="person" color={color} size={size} />,
         }}
       />
     </Tab.Navigator>
   );
 };
+
 
 const Navigation = () => {
   const { loading, user } = useContext(AuthContext);
