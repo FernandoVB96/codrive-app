@@ -9,6 +9,7 @@ import RegisterScreen from "../screens/RegisterScreen";
 import ViajeScreen from "../screens/ViajeScreen";
 import BuscarScreen from "../screens/BuscarScreen";
 import PublicarScreen from "../screens/PublicarScreen";
+import ReservasScreen from "../screens/ReservasScreen"; // <-- Aquí la importación
 import { ActivityIndicator, View } from "react-native";
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -30,7 +31,6 @@ const AuthStack = () => {
     </Stack.Navigator>
   );
 };
-
 
 const MainStack = () => {
   return (
@@ -63,6 +63,14 @@ const MainStack = () => {
           tabBarIcon: ({ color, size }) => <Icon name="cloud-upload" color={color} size={size} />,
         }}
       />
+      {/* Aquí agregamos la pestaña Reservas */}
+      <Tab.Screen
+        name="Reservas"
+        component={ReservasScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => <Icon name="list" color={color} size={size} />,
+        }}
+      />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
@@ -73,7 +81,6 @@ const MainStack = () => {
     </Tab.Navigator>
   );
 };
-
 
 const Navigation = () => {
   const { loading, user } = useContext(AuthContext);

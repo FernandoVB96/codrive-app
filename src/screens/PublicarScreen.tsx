@@ -3,112 +3,112 @@ import {
   View,
   Text,
   TextInput,
-  Button,
+  Pressable,
   StyleSheet,
   Alert,
   Platform,
   SafeAreaView,
   ScrollView,
+  StatusBar,
 } from "react-native";
 import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { AuthContext } from "../auth/AuthContext";
 
+// Formatea fecha y hora a formato DD/MM/YYYY HH:mm
+const formatDateTime = (date: Date) =>
+  new Intl.DateTimeFormat("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+
 const PublicarScreen = () => {
   const { token, user, setUser } = useContext(AuthContext);
 
+  // Estados del formulario viaje
   const [origen, setOrigen] = useState("");
   const [destino, setDestino] = useState("");
   const [fechaSalida, setFechaSalida] = useState(new Date());
   const [fechaLlegada, setFechaLlegada] = useState(new Date());
   const [plazas, setPlazas] = useState("");
 
+  // Estados temporales para pickers Android
   const [salidaTempDate, setSalidaTempDate] = useState<Date | null>(null);
   const [llegadaTempDate, setLlegadaTempDate] = useState<Date | null>(null);
 
+  // Estados para control rol y vehículo
   const [registroVehiculoActivo, setRegistroVehiculoActivo] = useState(false);
   const [vehiculoRegistrado, setVehiculoRegistrado] = useState(false);
   const [rolConfirmado, setRolConfirmado] = useState(false);
+  const [rolPreguntado, setRolPreguntado] = useState(false);
 
-  // Vehículo
+  // Estados del formulario vehículo
   const [marca, setMarca] = useState("");
   const [modelo, setModelo] = useState("");
   const [matricula, setMatricula] = useState("");
   const [plazasDisponibles, setPlazasDisponibles] = useState("");
 
-  // Control iOS pickers
+  // Estados para mostrar pickers iOS
   const [showSalidaPicker, setShowSalidaPicker] = useState(false);
   const [showLlegadaPicker, setShowLlegadaPicker] = useState(false);
 
-  // Para que al cancelar no pregunte siempre
-  const [rolPreguntado, setRolPreguntado] = useState(false);
-
-  // Para evitar infinite loops al actualizar user
   useEffect(() => {
     if (!rolPreguntado && user?.rol !== "CONDUCTOR") {
       Alert.alert(
         "No eres conductor",
         "¿Quieres ser conductor?",
         [
-          {
-            text: "No",
-            onPress: () => setRolPreguntado(true),
-            style: "cancel",
-          },
-          {
-            text: "Sí",
-            onPress: () => actualizarRolConductor(),
-          },
+          { text: "No", onPress: () => setRolPreguntado(true), style: "cancel" },
+          { text: "Sí", onPress: actualizarRolConductor },
         ],
         { cancelable: false }
       );
     } else if (user?.rol === "CONDUCTOR") {
       setRolConfirmado(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, rolPreguntado]);
 
-  // Función para actualizar rol - con todos los datos necesarios
   const actualizarRolConductor = async () => {
     if (!token || !user) return;
 
     try {
-      const response = await fetch(
-        "http://192.168.1.130:8080/usuarios/actualizar",
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: user.email || "",
-            nombre: user.nombre || "",
-            telefono: user.telefono || "",
-            password: "", // No cambiar contraseña
-            rol: "CONDUCTOR",
-          }),
-        }
-      );
+      const response = await fetch("http://192.168.1.130:8080/usuarios/actualizar", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user.email || "",
+          nombre: user.nombre || "",
+          telefono: user.telefono || "",
+          password: "",
+          rol: "CONDUCTOR",
+        }),
+      });
 
       if (!response.ok) {
         const errData = await response.json();
         throw new Error(errData.message || "Error al actualizar rol");
       }
 
-      const updatedUser = { ...user, rol: "CONDUCTOR" };
-      setUser(updatedUser);
+      setUser({ ...user, rol: "CONDUCTOR" });
       setRolPreguntado(true);
       setRegistroVehiculoActivo(true);
     } catch (error: unknown) {
-      let message = "Error desconocido";
-      if (error instanceof Error) {
-        message = error.message;
-      }
-      Alert.alert("Error", "No se pudo actualizar el rol a conductor: " + message);
+      Alert.alert(
+        "Error",
+        `No se pudo actualizar el rol a conductor: ${
+          error instanceof Error ? error.message : "Error desconocido"
+        }`
+      );
     }
   };
 
-  // Manejo pickers Android
+  // Pickers Android
   const showDatePickerAndroid = (
     currentDate: Date,
     onConfirm: (date: Date) => void,
@@ -123,9 +123,7 @@ const PublicarScreen = () => {
           onCancel();
           return;
         }
-        if (selectedDate) {
-          onConfirm(selectedDate);
-        }
+        if (selectedDate) onConfirm(selectedDate);
       },
     });
   };
@@ -144,9 +142,7 @@ const PublicarScreen = () => {
           onCancel();
           return;
         }
-        if (selectedTime) {
-          onConfirm(selectedTime);
-        }
+        if (selectedTime) onConfirm(selectedTime);
       },
     });
   };
@@ -209,18 +205,16 @@ const PublicarScreen = () => {
     }
   };
 
-  // iOS pickers
-  const onChangeSalida = (event: any, selectedDate?: Date) => {
+  const onChangeSalida = (_event: any, selectedDate?: Date) => {
     setShowSalidaPicker(false);
     if (selectedDate) setFechaSalida(selectedDate);
   };
 
-  const onChangeLlegada = (event: any, selectedDate?: Date) => {
+  const onChangeLlegada = (_event: any, selectedDate?: Date) => {
     setShowLlegadaPicker(false);
     if (selectedDate) setFechaLlegada(selectedDate);
   };
 
-  // Agregar vehículo
   const handleAgregarVehiculo = async () => {
     const plazasNum = parseInt(plazasDisponibles, 10);
     if (!marca || !modelo || !matricula || isNaN(plazasNum) || plazasNum <= 0) {
@@ -261,15 +255,15 @@ const PublicarScreen = () => {
       setVehiculoRegistrado(true);
       setRolConfirmado(true);
     } catch (error: unknown) {
-      let message = "Error desconocido";
-      if (error instanceof Error) {
-        message = error.message;
-      }
-      Alert.alert("Error", "No se pudo agregar vehículo: " + message);
+      Alert.alert(
+        "Error",
+        `No se pudo agregar vehículo: ${
+          error instanceof Error ? error.message : "Error desconocido"
+        }`
+      );
     }
   };
 
-  // Publicar viaje
   const handlePublicar = async () => {
     const plazasNum = parseInt(plazas, 10);
 
@@ -315,124 +309,170 @@ const PublicarScreen = () => {
       setFechaSalida(new Date());
       setFechaLlegada(new Date());
     } catch (error: unknown) {
-      let message = "Error desconocido";
-      if (error instanceof Error) {
-        message = error.message;
-      }
-      Alert.alert("No se pudo publicar el viaje", message);
+      Alert.alert(
+        "No se pudo publicar el viaje",
+        error instanceof Error ? error.message : "Error desconocido"
+      );
     }
   };
 
   if (!user) {
     return (
-      <View style={styles.container}>
-        <Text>Cargando usuario...</Text>
+      <View style={[styles.container, styles.center]}>
+        <Text style={styles.text}>Cargando usuario...</Text>
       </View>
     );
   }
 
   if (user.rol !== "CONDUCTOR" && !rolPreguntado) {
     return (
-      <View style={styles.container}>
-        <Text>Necesitas ser conductor para publicar viajes.</Text>
+      <View style={[styles.container, styles.center]}>
+        <Text style={styles.text}>Necesitas ser conductor para publicar viajes.</Text>
       </View>
     );
   }
 
   if (user.rol !== "CONDUCTOR" && rolPreguntado) {
     return (
-      <View style={styles.container}>
-        <Text>Por favor actualiza tu rol para publicar viajes.</Text>
+      <View style={[styles.container, styles.center]}>
+        <Text style={styles.text}>No tienes permiso para publicar viajes.</Text>
       </View>
     );
   }
 
-  if (registroVehiculoActivo && !vehiculoRegistrado) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <Text style={styles.title}>Registrar vehículo</Text>
-          <TextInput
-            placeholder="Marca"
-            value={marca}
-            onChangeText={setMarca}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Modelo"
-            value={modelo}
-            onChangeText={setModelo}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Matrícula"
-            value={matricula}
-            onChangeText={setMatricula}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Plazas disponibles"
-            value={plazasDisponibles}
-            onChangeText={setPlazasDisponibles}
-            keyboardType="numeric"
-            style={styles.input}
-          />
-          <Button title="Agregar vehículo" onPress={handleAgregarVehiculo} />
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
-
-  // Formulario para publicar viaje
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.title}>Publicar Viaje</Text>
+      <StatusBar barStyle="light-content" />
+      <ScrollView contentContainerStyle={styles.scrollView}>
+        <Text
+          style={{
+            color: "#e2ae9c",
+            fontSize: 22,
+            fontWeight: "800",
+            textAlign: "center",
+            marginBottom: 10,
+          }}
+        >
+          ¡Prepárate para tu próximo     viaje! 🚗💨
+        </Text>
 
+        <Text style={styles.label}>Origen:</Text>
         <TextInput
-          placeholder="Origen"
+          style={styles.input}
           value={origen}
           onChangeText={setOrigen}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Destino"
-          value={destino}
-          onChangeText={setDestino}
-          style={styles.input}
+          placeholder="Lugar de origen"
+          placeholderTextColor="#999"
         />
 
-        <Text style={styles.label}>Fecha y hora de salida</Text>
-        <Button title={fechaSalida.toLocaleString()} onPress={openSalidaPicker} />
+        <Text style={styles.label}>Destino:</Text>
+        <TextInput
+          style={styles.input}
+          value={destino}
+          onChangeText={setDestino}
+          placeholder="Lugar de destino"
+          placeholderTextColor="#999"
+        />
+
+        <Text style={styles.label}>Fecha y hora de salida:</Text>
+        <Pressable style={styles.button} onPress={openSalidaPicker}>
+          <Text style={styles.buttonText}>{formatDateTime(fechaSalida)}</Text>
+        </Pressable>
         {showSalidaPicker && (
           <DateTimePicker
             value={fechaSalida}
             mode="datetime"
             display="default"
             onChange={onChangeSalida}
+            textColor="#fff"
           />
         )}
 
-        <Text style={styles.label}>Fecha y hora de llegada</Text>
-        <Button title={fechaLlegada.toLocaleString()} onPress={openLlegadaPicker} />
+        <Text style={styles.label}>Fecha y hora de llegada:</Text>
+        <Pressable style={styles.button} onPress={openLlegadaPicker}>
+          <Text style={styles.buttonText}>{formatDateTime(fechaLlegada)}</Text>
+        </Pressable>
         {showLlegadaPicker && (
           <DateTimePicker
             value={fechaLlegada}
             mode="datetime"
             display="default"
             onChange={onChangeLlegada}
+            textColor="#fff"
           />
         )}
 
+        <Text style={styles.label}>Número de plazas:</Text>
         <TextInput
-          placeholder="Número de plazas"
+          style={styles.input}
           value={plazas}
           onChangeText={setPlazas}
+          placeholder="Número de plazas"
+          placeholderTextColor="#999"
           keyboardType="numeric"
-          style={styles.input}
         />
 
-        <Button title="Publicar viaje" onPress={handlePublicar} />
+        {rolConfirmado && !vehiculoRegistrado && !registroVehiculoActivo && (
+          <Pressable
+            style={[styles.button, styles.buttonSecondary]}
+            onPress={() => setRegistroVehiculoActivo(true)}
+          >
+            <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
+              Registrar vehículo
+            </Text>
+          </Pressable>
+        )}
+
+        {registroVehiculoActivo && (
+          <>
+            <Text style={styles.label}>Marca:</Text>
+            <TextInput
+              style={styles.input}
+              value={marca}
+              onChangeText={setMarca}
+              placeholder="Marca del vehículo"
+              placeholderTextColor="#999"
+            />
+
+            <Text style={styles.label}>Modelo:</Text>
+            <TextInput
+              style={styles.input}
+              value={modelo}
+              onChangeText={setModelo}
+              placeholder="Modelo del vehículo"
+              placeholderTextColor="#999"
+            />
+
+            <Text style={styles.label}>Matrícula:</Text>
+            <TextInput
+              style={styles.input}
+              value={matricula}
+              onChangeText={setMatricula}
+              placeholder="Matrícula"
+              placeholderTextColor="#999"
+            />
+
+            <Text style={styles.label}>Plazas disponibles:</Text>
+            <TextInput
+              style={styles.input}
+              value={plazasDisponibles}
+              onChangeText={setPlazasDisponibles}
+              placeholder="Número de plazas disponibles"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+            />
+
+            <Pressable style={styles.button} onPress={handleAgregarVehiculo}>
+              <Text style={styles.buttonText}>Agregar vehículo</Text>
+            </Pressable>
+          </>
+        )}
+
+        {vehiculoRegistrado && (
+          <Pressable style={styles.button} onPress={handlePublicar}>
+            <Text style={styles.buttonText}>Publicar viaje</Text>
+          </Pressable>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -441,27 +481,51 @@ const PublicarScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#eaeaea",
+    backgroundColor: "#344356",
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
-  scrollContainer: {
-    padding: 20,
+  scrollView: {
+    padding: 16,
+    paddingBottom: 40,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: 20,
+  center: {
+    justifyContent: "center",
+    alignItems: "center",
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#666",
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 15,
-    backgroundColor: "#fff",
+  text: {
+    color: "#fff",
+    fontSize: 18,
   },
   label: {
-    fontWeight: "600",
-    marginBottom: 5,
+    color: "#e2ae9c",
+    fontWeight: "bold",
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  input: {
+    backgroundColor: "#333",
+    color: "#fff",
+    padding: 12,
+    borderRadius: 8,
+  },
+  button: {
+    backgroundColor: "#e2ae9c",
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 16,
+    alignItems: "center",
+  },
+  buttonSecondary: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#e2ae9c",
+  },
+  buttonText: {
+    color: "#222",
+    fontWeight: "bold",
+  },
+  buttonTextSecondary: {
+    color: "#e2ae9c",
   },
 });
 

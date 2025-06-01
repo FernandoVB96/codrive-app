@@ -1,5 +1,14 @@
 import React, { useState, useContext } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert, SafeAreaView, StatusBar } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  SafeAreaView,
+  StatusBar,
+  Image,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
@@ -23,20 +32,58 @@ const LoginScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 20 }}>
-        <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 24 }}>Iniciar Sesión</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#344356" }}>
+      <StatusBar barStyle="light-content" backgroundColor="#344356" />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          paddingHorizontal: 20,
+        }}
+      >
+        {/* Logo con fondo claro */}
+        <View
+          style={{
+            backgroundColor: "#e2ae9c",
+            borderRadius: 100,
+            padding: 16,
+            marginBottom: 16,
+          }}
+        >
+          <Image
+            source={require("../../assets/logo.png")}
+            style={{
+              width: 120,
+              height: 120,
+              resizeMode: "contain",
+            }}
+          />
+        </View>
+
+        <Text
+          style={{
+            fontSize: 28,
+            fontWeight: "bold",
+            color: "#e2ae9c",
+            marginBottom: 32,
+          }}
+        >
+          Iniciar Sesión
+        </Text>
 
         <TextInput
           placeholder="Correo electrónico"
+          placeholderTextColor="#9c9c96"
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
           style={{
             borderWidth: 1,
-            borderColor: "#D1D5DB",
+            borderColor: "#9c9c96",
+            backgroundColor: "#151920",
+            color: "#ffffff",
             width: "100%",
             padding: 12,
             marginBottom: 16,
@@ -46,12 +93,15 @@ const LoginScreen = () => {
 
         <TextInput
           placeholder="Contraseña"
+          placeholderTextColor="#9c9c96"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
           style={{
             borderWidth: 1,
-            borderColor: "#D1D5DB",
+            borderColor: "#9c9c96",
+            backgroundColor: "#151920",
+            color: "#ffffff",
             width: "100%",
             padding: 12,
             marginBottom: 24,
@@ -61,7 +111,7 @@ const LoginScreen = () => {
 
         <TouchableOpacity
           style={{
-            backgroundColor: "#3B82F6",
+            backgroundColor: "#d6765e",
             width: "100%",
             paddingVertical: 14,
             borderRadius: 8,
@@ -75,7 +125,8 @@ const LoginScreen = () => {
 
         <TouchableOpacity
           style={{
-            backgroundColor: "#E5E7EB",
+            borderColor: "#9c9c96",
+            borderWidth: 1,
             width: "100%",
             paddingVertical: 14,
             borderRadius: 8,
@@ -83,7 +134,9 @@ const LoginScreen = () => {
           }}
           onPress={() => navigation.navigate("Register")}
         >
-          <Text style={{ fontWeight: "500" }}>¿No tienes cuenta? Regístrate</Text>
+          <Text style={{ color: "#e2ae9c", fontWeight: "500" }}>
+            ¿No tienes cuenta? Regístrate
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

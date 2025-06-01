@@ -1,4 +1,3 @@
-// src/screens/RegisterScreen.tsx
 import React, { useState, useContext } from "react";
 import {
   View,
@@ -8,7 +7,7 @@ import {
   Alert,
   SafeAreaView,
   StatusBar,
-  StyleSheet,
+  Image,
 } from "react-native";
 import { AuthContext } from "../auth/AuthContext";
 
@@ -29,73 +28,113 @@ const RegisterScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
-      <View style={styles.container}>
-        <Text style={styles.title}>Registrarse</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#344356" }}>
+      <StatusBar barStyle="light-content" backgroundColor="#344356" />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          paddingHorizontal: 24,
+        }}
+      >
+        {/* Logo */}
+        <View
+          style={{
+            backgroundColor: "#e2ae9c",
+            borderRadius: 100,
+            padding: 16,
+            marginBottom: 16,
+          }}
+        >
+          <Image
+            source={require("../../assets/logo.png")}
+            style={{
+              width: 120,
+              height: 120,
+              resizeMode: "contain",
+            }}
+          />
+        </View>
+
+        <Text
+          style={{
+            fontSize: 28,
+            fontWeight: "bold",
+            color: "#e2ae9c",
+            marginBottom: 32,
+          }}
+        >
+          Registrarse
+        </Text>
 
         <TextInput
           placeholder="Nombre"
-          style={styles.input}
+          placeholderTextColor="#9c9c96"
+          style={{
+            borderWidth: 1,
+            borderColor: "#9c9c96",
+            backgroundColor: "#151920",
+            color: "#ffffff",
+            width: "100%",
+            padding: 12,
+            borderRadius: 8,
+            marginBottom: 16,
+          }}
           onChangeText={setNombre}
           value={nombre}
         />
 
         <TextInput
           placeholder="Correo electrónico"
-          style={styles.input}
+          placeholderTextColor="#9c9c96"
+          style={{
+            borderWidth: 1,
+            borderColor: "#9c9c96",
+            backgroundColor: "#151920",
+            color: "#ffffff",
+            width: "100%",
+            padding: 12,
+            borderRadius: 8,
+            marginBottom: 16,
+          }}
           onChangeText={setEmail}
           value={email}
         />
 
         <TextInput
           placeholder="Contraseña"
+          placeholderTextColor="#9c9c96"
           secureTextEntry
-          style={styles.input}
+          style={{
+            borderWidth: 1,
+            borderColor: "#9c9c96",
+            backgroundColor: "#151920",
+            color: "#ffffff",
+            width: "100%",
+            padding: 12,
+            borderRadius: 8,
+            marginBottom: 24,
+          }}
           onChangeText={setPassword}
           value={password}
         />
 
-        <TouchableOpacity onPress={handleRegister} style={styles.button}>
-          <Text style={styles.buttonText}>Registrarse</Text>
+        <TouchableOpacity
+          onPress={handleRegister}
+          style={{
+            backgroundColor: "#d6765e",
+            width: "100%",
+            paddingVertical: 14,
+            borderRadius: 8,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ color: "white", fontWeight: "600" }}>Registrarse</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "white",
-    paddingHorizontal: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 24,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#D1D5DB",
-    width: "100%",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  button: {
-    backgroundColor: "#22C55E",
-    width: "100%",
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "600",
-  },
-});
 
 export default RegisterScreen;

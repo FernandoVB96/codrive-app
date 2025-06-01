@@ -1,5 +1,4 @@
-// src/screens/ViajeScreen.tsx
-import React, { useEffect, useState, useContext } from "react";
+import React, { useState, useContext, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,6 +11,7 @@ import {
   StatusBar,
 } from "react-native";
 import { AuthContext } from "../auth/AuthContext";
+import { useFocusEffect } from "@react-navigation/native";
 
 type Viaje = {
   id: number;
@@ -82,18 +82,32 @@ const ViajeScreen = () => {
     }
   };
 
-  useEffect(() => {
-    fetchMisViajes();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchMisViajes();
+    }, [])
+  );
+
+  const formatearFecha = (fechaIso: string) => {
+    const fecha = new Date(fechaIso);
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const anio = String(fecha.getFullYear()).slice(-2);
+    const hora = fecha.getHours();
+    const minutos = String(fecha.getMinutes()).padStart(2, "0");
+    return `${dia}/${mes}/${anio} ${hora}:${minutos}h`;
+  };
 
   const renderViaje = ({ item }: { item: Viaje }) => {
     const esConductor = item.conductor_id === user?.id;
 
     return (
       <View style={styles.viajeCard}>
-        <Text style={styles.title}>{item.origen} ➡️ {item.destino}</Text>
-        <Text>Salida: {item.fechaHoraSalida}</Text>
-        <Text>Plazas disponibles: {item.plazasDisponibles}</Text>
+        <Text style={styles.title}>
+          {item.origen} ➡️ {item.destino}
+        </Text>
+        <Text style={styles.text}>Salida: {formatearFecha(item.fechaHoraSalida)}</Text>
+        <Text style={styles.text}>Plazas disponibles: {item.plazasDisponibles}</Text>
         <Text style={styles.rol}>{esConductor ? "Eres el conductor" : "Eres pasajero"}</Text>
 
         {esConductor ? (
@@ -111,17 +125,21 @@ const ViajeScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
+      <StatusBar barStyle="light-content" backgroundColor="#344356" />
       <Text style={styles.header}>Mis viajes</Text>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#4CAF50" />
+        <ActivityIndicator size="large" color="#d6765e" />
       ) : (
         <FlatList
           data={viajes}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderViaje}
-          ListEmptyComponent={<Text>No estás en ningún viaje aún.</Text>}
+          ListEmptyComponent={
+            <Text style={{ color: "#e2ae9c", textAlign: "center", marginTop: 20 }}>
+              No estás en ningún viaje aún.
+            </Text>
+          }
         />
       )}
     </SafeAreaView>
@@ -131,42 +149,49 @@ const ViajeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: StatusBar.currentHeight || 0, // Esto asegura que no se superponga con la status bar
+    paddingTop: StatusBar.currentHeight || 0,
     paddingHorizontal: 16,
-    backgroundColor: "white",
+    backgroundColor: "#344356",
   },
   header: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 16,
     textAlign: "center",
+    color: "#e2ae9c",
   },
   viajeCard: {
     padding: 16,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#846761",
     borderRadius: 8,
     marginBottom: 12,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#151920",
   },
   title: {
     fontWeight: "bold",
     fontSize: 16,
     marginBottom: 8,
+    color: "#e2ae9c",
+  },
+  text: {
+    color: "#9c9c96",
+    marginBottom: 4,
   },
   rol: {
     fontStyle: "italic",
     marginBottom: 8,
+    color: "#a54740",
   },
   cancelButton: {
-    backgroundColor: "#e53935",
+    backgroundColor: "#a54740",
     padding: 10,
     borderRadius: 6,
     marginTop: 8,
     alignItems: "center",
   },
   abandonButton: {
-    backgroundColor: "#f57c00",
+    backgroundColor: "#d6765e",
     padding: 10,
     borderRadius: 6,
     marginTop: 8,

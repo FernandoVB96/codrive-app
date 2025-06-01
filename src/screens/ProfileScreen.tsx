@@ -25,34 +25,25 @@ interface Vehiculo {
 const ProfileScreen = () => {
   const { user, token, setUser, logout } = useContext(AuthContext);
 
-  // Estados usuario
   const [nombre, setNombre] = useState(user?.nombre || "");
   const [email, setEmail] = useState(user?.email || "");
   const [loadingPerfil, setLoadingPerfil] = useState(false);
-
-  // Vehículos
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [loadingVehiculos, setLoadingVehiculos] = useState(false);
 
-  // Nuevo vehículo
   const [nMarca, setNMarca] = useState("");
   const [nModelo, setNModelo] = useState("");
   const [nMatricula, setNMatricula] = useState("");
   const [nPlazas, setNPlazas] = useState("");
 
-  // Editar vehículo
   const [editVehiculoId, setEditVehiculoId] = useState<number | null>(null);
   const [editMarca, setEditMarca] = useState("");
   const [editModelo, setEditModelo] = useState("");
   const [editMatricula, setEditMatricula] = useState("");
   const [editPlazas, setEditPlazas] = useState("");
 
-  // --- Funciones ---
-
-  // Cargar perfil y vehículos al iniciar
   useEffect(() => {
     if (!user || !token) return;
-
     setLoadingPerfil(true);
     fetch("http://192.168.1.130:8080/usuarios/mi-perfil", {
       headers: { Authorization: `Bearer ${token}` },
@@ -73,7 +64,6 @@ const ProfileScreen = () => {
 
   const cargarVehiculos = () => {
     if (!user || !token) return;
-
     setLoadingVehiculos(true);
     fetch(`http://192.168.1.130:8080/vehiculos/conductor/${user.id}`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -89,10 +79,8 @@ const ProfileScreen = () => {
       });
   };
 
-  // Actualizar perfil usuario
   const handleActualizarPerfil = () => {
-    if (!token) return;
-    if (!nombre.trim() || !email.trim()) {
+    if (!token || !nombre.trim() || !email.trim()) {
       Alert.alert("Completa todos los campos de perfil");
       return;
     }
@@ -106,7 +94,7 @@ const ProfileScreen = () => {
       body: JSON.stringify({
         nombre: nombre.trim(),
         email: email.trim(),
-        password: "", // no se cambia
+        password: "",
         telefono: user?.telefono || "",
         rol: user?.rol || "",
       }),
@@ -119,16 +107,15 @@ const ProfileScreen = () => {
         return res.json();
       })
       .then((data) => {
-        setUser(data); // actualizar contexto
+        setUser(data);
         Alert.alert("Perfil actualizado");
       })
       .catch((e) => Alert.alert("Error", e.message));
   };
 
-  // Agregar vehículo
   const handleAgregarVehiculo = () => {
     if (!token || !user) return;
-    if (!nMarca.trim() || !nModelo.trim() || !nMatricula.trim() || !nPlazas.trim()) {
+    if (!nMarca || !nModelo || !nMatricula || !nPlazas) {
       Alert.alert("Completa todos los campos del vehículo");
       return;
     }
@@ -145,9 +132,9 @@ const ProfileScreen = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        marca: nMarca.trim(),
-        modelo: nModelo.trim(),
-        matricula: nMatricula.trim(),
+        marca: nMarca,
+        modelo: nModelo,
+        matricula: nMatricula,
         plazasDisponibles: plazasNum,
       }),
     })
@@ -159,7 +146,7 @@ const ProfileScreen = () => {
         return res.json();
       })
       .then((nuevoVehiculo) => {
-        setVehiculos((old) => [...old, nuevoVehiculo]);
+        setVehiculos((prev) => [...prev, nuevoVehiculo]);
         setNMarca("");
         setNModelo("");
         setNMatricula("");
@@ -169,25 +156,20 @@ const ProfileScreen = () => {
       .catch((e) => Alert.alert("Error", e.message));
   };
 
-  // Eliminar vehículo
   const handleEliminarVehiculo = (id: number) => {
     Alert.alert("Confirmar", "¿Seguro que quieres eliminar este vehículo?", [
-      {
-        text: "Cancelar",
-        style: "cancel",
-      },
+      { text: "Cancelar", style: "cancel" },
       {
         text: "Eliminar",
         style: "destructive",
         onPress: () => {
-          if (!token) return;
           fetch(`http://192.168.1.130:8080/vehiculos/${id}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },
           })
             .then((res) => {
               if (!res.ok) throw new Error("Error eliminando vehículo");
-              setVehiculos((old) => old.filter((v) => v.id !== id));
+              setVehiculos((prev) => prev.filter((v) => v.id !== id));
               Alert.alert("Vehículo eliminado");
             })
             .catch(() => Alert.alert("Error", "No se pudo eliminar vehículo"));
@@ -196,7 +178,6 @@ const ProfileScreen = () => {
     ]);
   };
 
-  // Preparar edición vehículo
   const comenzarEdicion = (vehiculo: Vehiculo) => {
     setEditVehiculoId(vehiculo.id);
     setEditMarca(vehiculo.marca);
@@ -205,17 +186,12 @@ const ProfileScreen = () => {
     setEditPlazas(String(vehiculo.plazasDisponibles));
   };
 
-  // Cancelar edición
-  const cancelarEdicion = () => {
-    setEditVehiculoId(null);
-  };
+  const cancelarEdicion = () => setEditVehiculoId(null);
 
-  // Guardar edición vehículo
   const guardarEdicion = () => {
     if (!token || editVehiculoId === null) return;
-
-    if (!editMarca.trim() || !editModelo.trim() || !editMatricula.trim() || !editPlazas.trim()) {
-      Alert.alert("Completa todos los campos del vehículo");
+    if (!editMarca || !editModelo || !editMatricula || !editPlazas) {
+      Alert.alert("Completa todos los campos");
       return;
     }
 
@@ -232,9 +208,9 @@ const ProfileScreen = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        marca: editMarca.trim(),
-        modelo: editModelo.trim(),
-        matricula: editMatricula.trim(),
+        marca: editMarca,
+        modelo: editModelo,
+        matricula: editMatricula,
         plazasDisponibles: plazasNum,
       }),
     })
@@ -243,18 +219,12 @@ const ProfileScreen = () => {
         setVehiculos((old) =>
           old.map((v) =>
             v.id === editVehiculoId
-              ? {
-                  ...v,
-                  marca: editMarca.trim(),
-                  modelo: editModelo.trim(),
-                  matricula: editMatricula.trim(),
-                  plazasDisponibles: plazasNum,
-                }
+              ? { ...v, marca: editMarca, modelo: editModelo, matricula: editMatricula, plazasDisponibles: plazasNum }
               : v
           )
         );
-        Alert.alert("Vehículo actualizado");
         setEditVehiculoId(null);
+        Alert.alert("Vehículo actualizado");
       })
       .catch(() => Alert.alert("Error", "No se pudo actualizar vehículo"));
   };
@@ -262,140 +232,73 @@ const ProfileScreen = () => {
   if (!user) {
     return (
       <View style={styles.center}>
-        <Text>Cargando usuario...</Text>
+        <Text style={{ color: "white" }}>Cargando usuario...</Text>
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f5f5f5" }}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         {loadingPerfil ? (
           <View style={styles.center}>
-            <ActivityIndicator size="large" />
+            <ActivityIndicator size="large" color="#e2ae9c" />
           </View>
         ) : (
           <FlatList
             data={vehiculos}
             keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+            contentContainerStyle={{ padding: 20 }}
             ListHeaderComponent={
               <>
                 <Text style={styles.title}>Mi Perfil</Text>
-
-                {/* Perfil */}
-                <Text style={styles.label}>Nombre</Text>
-                <TextInput style={styles.input} value={nombre} onChangeText={setNombre} />
-
+                <TextInput style={styles.input} value={nombre} onChangeText={setNombre} placeholder="Nombre" placeholderTextColor="#9c9c96" />
                 <TouchableOpacity style={styles.button} onPress={handleActualizarPerfil}>
                   <Text style={styles.buttonText}>Actualizar Perfil</Text>
                 </TouchableOpacity>
 
-                {/* Agregar nuevo vehículo */}
                 <Text style={[styles.title, { marginTop: 30 }]}>Agregar Vehículo</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Marca"
-                  value={nMarca}
-                  onChangeText={setNMarca}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Modelo"
-                  value={nModelo}
-                  onChangeText={setNModelo}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Matrícula"
-                  value={nMatricula}
-                  onChangeText={setNMatricula}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Plazas disponibles"
-                  value={nPlazas}
-                  onChangeText={setNPlazas}
-                  keyboardType="numeric"
-                />
+                <TextInput style={styles.input} placeholder="Marca" value={nMarca} onChangeText={setNMarca} placeholderTextColor="#9c9c96" />
+                <TextInput style={styles.input} placeholder="Modelo" value={nModelo} onChangeText={setNModelo} placeholderTextColor="#9c9c96" />
+                <TextInput style={styles.input} placeholder="Matrícula" value={nMatricula} onChangeText={setNMatricula} placeholderTextColor="#9c9c96" />
+                <TextInput style={styles.input} placeholder="Plazas disponibles" value={nPlazas} onChangeText={setNPlazas} keyboardType="numeric" placeholderTextColor="#9c9c96" />
                 <TouchableOpacity style={styles.button} onPress={handleAgregarVehiculo}>
                   <Text style={styles.buttonText}>Agregar Vehículo</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.button, { backgroundColor: "#EF4444", marginTop: 40 }]}
-                  onPress={logout}
-                >
+                <TouchableOpacity style={styles.logoutButton} onPress={logout}>
                   <Text style={styles.buttonText}>Cerrar sesión</Text>
                 </TouchableOpacity>
 
                 <Text style={[styles.title, { marginTop: 30 }]}>Mis Vehículos</Text>
-                {loadingVehiculos && (
-                  <ActivityIndicator size="large" style={{ marginBottom: 12 }} />
-                )}
+                {loadingVehiculos && <ActivityIndicator size="large" color="#e2ae9c" />}
               </>
             }
             renderItem={({ item }) =>
               editVehiculoId === item.id ? (
-                <View style={styles.vehiculoContainer}>
-                  <TextInput
-                    style={styles.input}
-                    value={editMarca}
-                    onChangeText={setEditMarca}
-                    placeholder="Marca"
-                  />
-                  <TextInput
-                    style={styles.input}
-                    value={editModelo}
-                    onChangeText={setEditModelo}
-                    placeholder="Modelo"
-                  />
-                  <TextInput
-                    style={styles.input}
-                    value={editMatricula}
-                    onChangeText={setEditMatricula}
-                    placeholder="Matrícula"
-                  />
-                  <TextInput
-                    style={styles.input}
-                    value={editPlazas}
-                    onChangeText={setEditPlazas}
-                    placeholder="Plazas disponibles"
-                    keyboardType="numeric"
-                  />
+                <View style={styles.vehiculoCard}>
+                  <TextInput style={styles.input} value={editMarca} onChangeText={setEditMarca} placeholder="Marca" placeholderTextColor="#9c9c96" />
+                  <TextInput style={styles.input} value={editModelo} onChangeText={setEditModelo} placeholder="Modelo" placeholderTextColor="#9c9c96" />
+                  <TextInput style={styles.input} value={editMatricula} onChangeText={setEditMatricula} placeholder="Matrícula" placeholderTextColor="#9c9c96" />
+                  <TextInput style={styles.input} value={editPlazas} onChangeText={setEditPlazas} placeholder="Plazas disponibles" keyboardType="numeric" placeholderTextColor="#9c9c96" />
                   <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                    <TouchableOpacity style={styles.buttonSmall} onPress={guardarEdicion}>
+                    <TouchableOpacity style={styles.smallButton} onPress={guardarEdicion}>
                       <Text style={styles.buttonText}>Guardar</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.buttonSmall, { backgroundColor: "#ccc" }]}
-                      onPress={cancelarEdicion}
-                    >
+                    <TouchableOpacity style={[styles.smallButton, { backgroundColor: "#9c9c96" }]} onPress={cancelarEdicion}>
                       <Text style={{ color: "#333" }}>Cancelar</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
               ) : (
-                <View style={styles.vehiculoContainer}>
-                  <Text style={styles.vehiculoText}>
-                    {item.marca} {item.modelo} - {item.matricula} - Plazas:{" "}
-                    {item.plazasDisponibles}
-                  </Text>
+                <View style={styles.vehiculoCard}>
+                  <Text style={styles.vehiculoText}>{item.marca} {item.modelo} - {item.matricula} - Plazas: {item.plazasDisponibles}</Text>
                   <View style={{ flexDirection: "row" }}>
-                    <TouchableOpacity
-                      style={[styles.buttonSmall, { backgroundColor: "#3b82f6", marginRight: 10 }]}
-                      onPress={() => comenzarEdicion(item)}
-                    >
+                    <TouchableOpacity style={[styles.smallButton, { backgroundColor: "#3b82f6", marginRight: 10 }]} onPress={() => comenzarEdicion(item)}>
                       <Text style={styles.buttonText}>Editar</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.buttonSmall, { backgroundColor: "#ef4444" }]}
-                      onPress={() => handleEliminarVehiculo(item.id)}
-                    >
+                    <TouchableOpacity style={[styles.smallButton, { backgroundColor: "#ef4444" }]} onPress={() => handleEliminarVehiculo(item.id)}>
                       <Text style={styles.buttonText}>Eliminar</Text>
                     </TouchableOpacity>
                   </View>
@@ -410,33 +313,43 @@ const ProfileScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#344356" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 12 },
-  label: { fontWeight: "600", marginBottom: 6 },
+  title: { fontSize: 24, fontWeight: "bold", color: "#e2ae9c", marginBottom: 12 },
   input: {
     borderWidth: 1,
-    borderColor: "#999",
-    padding: 8,
-    borderRadius: 4,
+    borderColor: "#9c9c96",
+    padding: 10,
+    borderRadius: 6,
     marginBottom: 12,
-    backgroundColor: "white",
+    backgroundColor: "#151920",
+    color: "white",
   },
   button: {
-    backgroundColor: "#2563eb",
+    backgroundColor: "#d6765e",
+    paddingVertical: 12,
+    borderRadius: 6,
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  logoutButton: {
+    backgroundColor: "#EF4444",
     paddingVertical: 12,
     borderRadius: 6,
     alignItems: "center",
     marginBottom: 12,
   },
   buttonText: { color: "white", fontWeight: "600" },
-  vehiculoContainer: {
-    backgroundColor: "white",
+  vehiculoCard: {
+    backgroundColor: "#151920",
     padding: 12,
-    marginBottom: 12,
     borderRadius: 6,
+    marginBottom: 12,
+    borderColor: "#9c9c96",
+    borderWidth: 1,
   },
-  vehiculoText: { fontSize: 16, marginBottom: 8 },
-  buttonSmall: {
+  vehiculoText: { fontSize: 16, color: "#ffffff", marginBottom: 8 },
+  smallButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 4,

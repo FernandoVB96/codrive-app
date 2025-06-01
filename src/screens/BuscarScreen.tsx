@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { View, Text, FlatList, Button, StyleSheet, Alert, TextInput } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, TextInput, StatusBar } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../auth/AuthContext";
 
@@ -30,7 +30,9 @@ const BuscarScreen = () => {
         return;
       }
 
-      let url = `http://192.168.1.130:8080/viajes/disponibles?origen=${encodeURIComponent(origen)}&destino=${encodeURIComponent(destino)}`;
+      let url = `http://192.168.1.130:8080/viajes/disponibles?origen=${encodeURIComponent(
+        origen
+      )}&destino=${encodeURIComponent(destino)}`;
       if (plazas) url += `&plazasMin=${plazasNum}`;
 
       const response = await fetch(url, {
@@ -46,94 +48,150 @@ const BuscarScreen = () => {
     }
   };
 
-  const unirseAViaje = async (viajeId: number) => {
+  const crearReserva = async (viajeId: number) => {
     try {
-      const response = await fetch(`http://192.168.1.130:8080/viajes/${viajeId}/unirse`, {
+      const response = await fetch("http://192.168.1.130:8080/reservas", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({ viajeId }),
       });
-      if (!response.ok) throw new Error("Error al unirse al viaje");
-      Alert.alert("Te has unido al viaje!");
+      if (!response.ok) throw new Error("Error al crear reserva");
+      Alert.alert("Reserva creada, esperando confirmación del conductor");
       fetchViajes();
     } catch (error) {
       console.error(error);
-      Alert.alert("No se pudo unir al viaje");
+      Alert.alert("No se pudo crear la reserva");
     }
   };
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        {/* Inputs y botones */}
-        <TextInput
-          placeholder="Origen"
-          value={origen}
-          onChangeText={setOrigen}
-          style={styles.input}
-          autoCapitalize="none"
-        />
-        <TextInput
-          placeholder="Destino"
-          value={destino}
-          onChangeText={setDestino}
-          style={styles.input}
-          autoCapitalize="none"
-        />
-        <TextInput
-          placeholder="Plazas mínimas"
-          value={plazas}
-          onChangeText={setPlazas}
-          style={styles.input}
-          keyboardType="numeric"
-        />
-        <Button title="Buscar" onPress={fetchViajes} />
+  const formatearFecha = (fechaIso: string) => {
+    const fecha = new Date(fechaIso);
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const anio = String(fecha.getFullYear()).slice(-2);
+    const hora = fecha.getHours();
+    const minutos = String(fecha.getMinutes()).padStart(2, "0");
+    return `${dia}/${mes}/${anio} ${hora}:${minutos}h`;
+  };
 
-        {/* Lista */}
-        <FlatList
-          data={viajes}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }: { item: Viaje }) => (
-            <View style={styles.viaje}>
-              <Text style={styles.title}>{item.origen} ➡️ {item.destino}</Text>
-              <Text>Salida: {item.fechaHoraSalida}</Text>
-              <Text>Plazas disponibles: {item.plazasDisponibles}</Text>
-              <Button title="Unirse" onPress={() => unirseAViaje(item.id)} />
-            </View>
-          )}
-          ListEmptyComponent={<Text>No hay viajes disponibles</Text>}
-        />
-      </View>
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#344356" />
+      <Text style={styles.header}>Buscar viajes</Text>
+
+      <TextInput
+        placeholder="Origen"
+        placeholderTextColor="#9c9c96"
+        value={origen}
+        onChangeText={setOrigen}
+        style={styles.input}
+        autoCapitalize="none"
+      />
+      <TextInput
+        placeholder="Destino"
+        placeholderTextColor="#9c9c96"
+        value={destino}
+        onChangeText={setDestino}
+        style={styles.input}
+        autoCapitalize="none"
+      />
+      <TextInput
+        placeholder="Plazas mínimas"
+        placeholderTextColor="#9c9c96"
+        value={plazas}
+        onChangeText={setPlazas}
+        style={styles.input}
+        keyboardType="numeric"
+      />
+      <TouchableOpacity style={styles.searchButton} onPress={fetchViajes}>
+        <Text style={styles.buttonText}>Buscar</Text>
+      </TouchableOpacity>
+
+      <FlatList
+        data={viajes}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }: { item: Viaje }) => (
+          <View style={styles.viajeCard}>
+            <Text style={styles.title}>
+              {item.origen} ➡️ {item.destino}
+            </Text>
+            <Text style={styles.text}>Salida: {formatearFecha(item.fechaHoraSalida)}</Text>
+            <Text style={styles.text}>Plazas disponibles: {item.plazasDisponibles}</Text>
+            <TouchableOpacity style={styles.reserveButton} onPress={() => crearReserva(item.id)}>
+              <Text style={styles.buttonText}>Reservar</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        ListEmptyComponent={
+          <Text style={{ color: "#e2ae9c", textAlign: "center", marginTop: 20 }}>
+            No hay viajes disponibles
+          </Text>
+        }
+      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "white",
-  },
   container: {
     flex: 1,
-    padding: 16,
+    paddingTop: StatusBar.currentHeight || 0,
+    paddingHorizontal: 16,
+    backgroundColor: "#344356",
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+    color: "#e2ae9c",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 4,
-    padding: 8,
+    borderColor: "#846761",
+    borderRadius: 8,
+    padding: 12,
     marginBottom: 12,
+    color: "#e2ae9c",
+    backgroundColor: "#151920",
   },
-  viaje: {
+  searchButton: {
+    backgroundColor: "#d6765e",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 20,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "600",
+  },
+  viajeCard: {
     padding: 16,
-    borderBottomWidth: 1,
-    borderColor: "#ccc",
+    borderWidth: 1,
+    borderColor: "#846761",
+    borderRadius: 8,
+    marginBottom: 12,
+    backgroundColor: "#151920",
   },
   title: {
     fontWeight: "bold",
+    fontSize: 16,
     marginBottom: 8,
+    color: "#e2ae9c",
+  },
+  text: {
+    color: "#9c9c96",
+    marginBottom: 8,
+  },
+  reserveButton: {
+    backgroundColor: "#a54740",
+    padding: 10,
+    borderRadius: 6,
+    alignItems: "center",
   },
 });
 
