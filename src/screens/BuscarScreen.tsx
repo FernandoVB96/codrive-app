@@ -1,7 +1,18 @@
-import React, { useState, useContext } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, TextInput, StatusBar } from "react-native";
+import React, { useState, useContext, useEffect } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  TextInput,
+  StatusBar,
+  Platform,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../auth/AuthContext";
+import * as Notifications from "expo-notifications";
 
 type Viaje = {
   id: number;
@@ -77,120 +88,141 @@ const BuscarScreen = () => {
     return `${dia}/${mes}/${anio} ${hora}:${minutos}h`;
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#344356" />
-      <Text style={styles.header}>Buscar viajes</Text>
+  useEffect(() => {
+    // Listener para notificaciones recibidas en foreground
+    const subscription = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        Alert.alert(
+          "Nueva notificación",
+          notification.request.content.body || "Tienes una actualización"
+        );
+      }
+    );
 
-      <TextInput
-        placeholder="Origen"
-        placeholderTextColor="#9c9c96"
-        value={origen}
-        onChangeText={setOrigen}
-        style={styles.input}
-        autoCapitalize="none"
-      />
-      <TextInput
-        placeholder="Destino"
-        placeholderTextColor="#9c9c96"
-        value={destino}
-        onChangeText={setDestino}
-        style={styles.input}
-        autoCapitalize="none"
-      />
-      <TextInput
-        placeholder="Plazas mínimas"
-        placeholderTextColor="#9c9c96"
-        value={plazas}
-        onChangeText={setPlazas}
-        style={styles.input}
-        keyboardType="numeric"
-      />
-      <TouchableOpacity style={styles.searchButton} onPress={fetchViajes}>
-        <Text style={styles.buttonText}>Buscar</Text>
-      </TouchableOpacity>
+    // Listener para respuesta a notificaciones (cuando el usuario toca la notificación)
+    const responseSubscription =
+      Notifications.addNotificationResponseReceivedListener(() => {
+        fetchViajes();
+      });
+
+    return () => {
+      subscription.remove();
+      responseSubscription.remove();
+    };
+  }, []);
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.form}>
+        <TextInput
+          style={styles.input}
+          placeholder="Origen"
+          value={origen}
+          onChangeText={setOrigen}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Destino"
+          value={destino}
+          onChangeText={setDestino}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Plazas mínimas"
+          value={plazas}
+          keyboardType="numeric"
+          onChangeText={setPlazas}
+        />
+        <TouchableOpacity style={styles.button} onPress={fetchViajes}>
+          <Text style={styles.buttonText}>Buscar</Text>
+        </TouchableOpacity>
+      </View>
 
       <FlatList
         data={viajes}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }: { item: Viaje }) => (
-          <View style={styles.viajeCard}>
+        contentContainerStyle={{ padding: 16 }}
+        renderItem={({ item }) => (
+          <View style={styles.viaje}>
             <Text style={styles.title}>
               {item.origen} ➡️ {item.destino}
             </Text>
-            <Text style={styles.text}>Salida: {formatearFecha(item.fechaHoraSalida)}</Text>
-            <Text style={styles.text}>Plazas disponibles: {item.plazasDisponibles}</Text>
-            <TouchableOpacity style={styles.reserveButton} onPress={() => crearReserva(item.id)}>
+            <Text style={styles.text}>
+              Salida: {formatearFecha(item.fechaHoraSalida)}
+            </Text>
+            <Text style={styles.text}>
+              Plazas disponibles: {item.plazasDisponibles}
+            </Text>
+            <TouchableOpacity
+              style={styles.reserveButton}
+              onPress={() => {
+                Alert.alert(
+                  "Confirmar reserva",
+                  `¿Quieres reservar plaza para el viaje ${item.origen} -> ${item.destino}?`,
+                  [
+                    { text: "No" },
+                    { text: "Sí", onPress: () => crearReserva(item.id) },
+                  ]
+                );
+              }}
+            >
               <Text style={styles.buttonText}>Reservar</Text>
             </TouchableOpacity>
           </View>
         )}
-        ListEmptyComponent={
-          <Text style={{ color: "#e2ae9c", textAlign: "center", marginTop: 20 }}>
-            No hay viajes disponibles
-          </Text>
-        }
       />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    paddingTop: StatusBar.currentHeight || 0,
-    paddingHorizontal: 16,
     backgroundColor: "#344356",
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
-  header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
-    color: "#e2ae9c",
+  form: {
+    padding: 16,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#846761",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    color: "#e2ae9c",
     backgroundColor: "#151920",
+    color: "white",
+    marginBottom: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
-  searchButton: {
-    backgroundColor: "#d6765e",
+  button: {
+    backgroundColor: "#e2ae9c",
     padding: 12,
     borderRadius: 8,
-    marginBottom: 20,
     alignItems: "center",
   },
   buttonText: {
-    color: "white",
-    fontWeight: "600",
+    fontWeight: "bold",
+    color: "#344356",
   },
-  viajeCard: {
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#846761",
-    borderRadius: 8,
-    marginBottom: 12,
+  viaje: {
     backgroundColor: "#151920",
+    padding: 16,
+    marginBottom: 12,
+    borderRadius: 8,
   },
   title: {
     fontWeight: "bold",
+    marginBottom: 4,
     fontSize: 16,
-    marginBottom: 8,
     color: "#e2ae9c",
   },
   text: {
-    color: "#9c9c96",
-    marginBottom: 8,
+    color: "#ffffff",
+    marginBottom: 4,
   },
   reserveButton: {
-    backgroundColor: "#a54740",
-    padding: 10,
-    borderRadius: 6,
+    marginTop: 8,
+    backgroundColor: "#5cb85c",
+    paddingVertical: 8,
+    borderRadius: 8,
     alignItems: "center",
   },
 });

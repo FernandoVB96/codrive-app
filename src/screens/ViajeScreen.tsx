@@ -20,6 +20,7 @@ type Viaje = {
   fechaHoraSalida: string;
   plazasDisponibles: number;
   conductor_id: number;
+  rolUsuario: "CONDUCTOR" | "PASAJERO"; // Aquí la clave
 };
 
 const ViajeScreen = () => {
@@ -99,7 +100,7 @@ const ViajeScreen = () => {
   };
 
   const renderViaje = ({ item }: { item: Viaje }) => {
-    const esConductor = item.conductor_id === user?.id;
+    const esConductor = item.rolUsuario === "CONDUCTOR";
 
     return (
       <View style={styles.viajeCard}>

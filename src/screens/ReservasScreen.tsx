@@ -13,6 +13,7 @@ import {
   Platform,
 } from "react-native";
 import { AuthContext } from "../auth/AuthContext";
+import * as Notifications from "expo-notifications";
 
 type Usuario = {
   id: number;
@@ -48,29 +49,61 @@ const ReservasScreen = () => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchReservas = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const url =
-        user.rol === "CONDUCTOR"
-          ? `http://192.168.1.130:8080/reservas/mis-viajes/reservas`
-          : `http://192.168.1.130:8080/reservas/usuario/${user.id}`;
+const fetchReservas = async () => {
+  if (!user) {
+    console.log("No hay usuario logueado.");
+    return;
+  }
 
-      const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  setLoading(true);
 
-      if (!response.ok) throw new Error("Error al cargar reservas");
-      const data = await response.json();
-      setReservas(data);
-    } catch (error) {
-      Alert.alert("Error", "No se pudieron cargar las reservas.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+  try {
+    const reservasPasajeroUrl = `http://192.168.1.130:8080/reservas/usuario/${user.id}`;
+    const headers = { Authorization: `Bearer ${token}` };
+
+    // 🟢 Fetch de reservas como pasajero (siempre)
+    const pasajeroResp = await fetch(reservasPasajeroUrl, { headers });
+
+    if (!pasajeroResp.ok) {
+      throw new Error("Error al cargar reservas como pasajero");
     }
-  };
+
+    const reservasPasajero = await pasajeroResp.json();
+
+    let todasLasReservas = Array.isArray(reservasPasajero)
+      ? reservasPasajero
+      : [];
+
+    // 🟡 Si es conductor, también pedimos sus viajes
+    if (user.rol?.toUpperCase() === "CONDUCTOR") {
+      const conductorUrl = `http://192.168.1.130:8080/reservas/mis-viajes/reservas`;
+
+      const conductorResp = await fetch(conductorUrl, { headers });
+
+      if (!conductorResp.ok) {
+        throw new Error("Error al cargar reservas como conductor");
+      }
+
+      const reservasConductor = await conductorResp.json();
+
+      if (Array.isArray(reservasConductor)) {
+        // 🧠 Evitá duplicados si por casualidad una reserva aparece en ambos
+        const idsExistentes = new Set(todasLasReservas.map((r) => r.id));
+        reservasConductor.forEach((res) => {
+          if (!idsExistentes.has(res.id)) todasLasReservas.push(res);
+        });
+      }
+    }
+    setReservas(todasLasReservas);
+  } catch (error) {
+    console.error("Error en fetchReservas:", error);
+    Alert.alert("Error", "No se pudieron cargar las reservas.");
+  } finally {
+    setLoading(false);
+    setRefreshing(false);
+  }
+};
+
 
   const confirmarReserva = async (id: number) => {
     try {
@@ -118,7 +151,32 @@ const ReservasScreen = () => {
 
   useEffect(() => {
     fetchReservas();
+
+    const subscription = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        Alert.alert(
+          "Nueva notificación",
+          notification.request.content.body || "Tienes una actualización"
+        );
+        fetchReservas();
+      }
+    );
+
+    const responseSubscription =
+      Notifications.addNotificationResponseReceivedListener(() => {
+        fetchReservas();
+      });
+
+    return () => {
+      subscription.remove();
+      responseSubscription.remove();
+    };
   }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchReservas();
+  };
 
   if (loading) {
     return (
@@ -147,7 +205,7 @@ const ReservasScreen = () => {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={fetchReservas}
+            onRefresh={onRefresh}
             colors={["#e2ae9c"]}
             tintColor="#e2ae9c"
           />
@@ -160,9 +218,13 @@ const ReservasScreen = () => {
               <Text style={styles.title}>
                 {item.viaje.origen} ➡️ {item.viaje.destino}
               </Text>
-              <Text style={styles.text}>Fecha salida: {formatearFecha(item.viaje.fechaHoraSalida)}</Text>
+              <Text style={styles.text}>
+                Fecha salida: {formatearFecha(item.viaje.fechaHoraSalida)}
+              </Text>
               <Text style={styles.text}>Estado: {item.estado}</Text>
-              <Text style={styles.text}>Conductor: {item.viaje.conductor.nombre}</Text>
+              <Text style={styles.text}>
+                Conductor: {item.viaje.conductor.nombre}
+              </Text>
               <Text style={styles.text}>Pasajero: {item.usuario.nombre}</Text>
 
               {esReservaPendiente && user.rol === "CONDUCTOR" && (
