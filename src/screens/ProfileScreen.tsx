@@ -32,6 +32,7 @@ const ProfileScreen = () => {
 
   const [nombre, setNombre] = useState(user?.nombre || "");
   const [email, setEmail] = useState(user?.email || "");
+  const [telefono, setTelefono] = useState(user?.telefono || "");
   const [loadingPerfil, setLoadingPerfil] = useState(false);
   const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
   const [loadingVehiculos, setLoadingVehiculos] = useState(false);
@@ -59,6 +60,7 @@ const ProfileScreen = () => {
       .then((data) => {
         setNombre(data.nombre);
         setEmail(data.email);
+        setTelefono(data.telefono || "");
         setLoadingPerfil(false);
       })
       .catch(() => {
@@ -87,7 +89,7 @@ const ProfileScreen = () => {
   };
 
   const handleActualizarPerfil = () => {
-    if (!token || !nombre.trim() || !email.trim()) {
+    if (!token || !nombre.trim() || !email.trim() || !telefono.trim()) {
       Alert.alert("Completa todos los campos de perfil");
       return;
     }
@@ -102,7 +104,7 @@ const ProfileScreen = () => {
         nombre: nombre.trim(),
         email: email.trim(),
         password: "",
-        telefono: user?.telefono || "",
+        telefono: telefono.trim(),
         rol: user?.rol || "",
       }),
     })
@@ -143,6 +145,7 @@ const ProfileScreen = () => {
         modelo: nModelo,
         matricula: nMatricula,
         plazasDisponibles: plazasNum,
+        conductorId: user.id,
       }),
     })
       .then(async (res) => {
@@ -163,6 +166,7 @@ const ProfileScreen = () => {
       })
       .catch((e) => Alert.alert("Error", e.message));
   };
+
 
   const handleEliminarVehiculo = (id: number) => {
     Alert.alert("Confirmar", "¿Seguro que quieres eliminar este vehículo?", [
@@ -220,6 +224,7 @@ const ProfileScreen = () => {
         modelo: editModelo,
         matricula: editMatricula,
         plazasDisponibles: plazasNum,
+        conductor: { id: user.id },
       }),
     })
       .then((res) => {
@@ -242,6 +247,7 @@ const ProfileScreen = () => {
       })
       .catch(() => Alert.alert("Error", "No se pudo actualizar vehículo"));
   };
+
 
   const confirmarCerrarSesion = () => {
     Alert.alert(
@@ -304,6 +310,12 @@ const ProfileScreen = () => {
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                />
+                <InputField
+                  placeholder="Teléfono"
+                  value={telefono}
+                  onChangeText={setTelefono}
+                  keyboardType="phone-pad"
                 />
                 <PrimaryButton
                   label="Actualizar Perfil"
@@ -512,7 +524,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#121212",
   },
-      logoContainer: {
+  logoContainer: {
     position: "absolute",
     top: StatusBar.currentHeight ? StatusBar.currentHeight + 8 : 24,
     left: 16,

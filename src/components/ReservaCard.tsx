@@ -83,6 +83,7 @@ const ReservaCard = ({ reserva, onActualizar }: Props) => {
   };
 
   const esReservaPendiente = reserva.estado === "PENDIENTE";
+  const esConductorDelViaje = user?.id === reserva.viaje.conductor.id;
 
   // Cambia el fondo según estado
   let backgroundColor = "#151920"; // color default
@@ -105,9 +106,8 @@ const ReservaCard = ({ reserva, onActualizar }: Props) => {
       </Text>
       <Text style={styles.text}>Estado: {reserva.estado}</Text>
       <Text style={styles.text}>Conductor: {reserva.viaje.conductor.nombre}</Text>
-      {/* Aquí quité la línea que mostraba el pasajero */}
 
-      {esReservaPendiente && user?.rol === "CONDUCTOR" && (
+      {esReservaPendiente && esConductorDelViaje && (
         <View style={{ flexDirection: "row", marginTop: 12 }}>
           <TouchableOpacity
             style={[styles.button, styles.confirmButton]}
@@ -143,7 +143,7 @@ const ReservaCard = ({ reserva, onActualizar }: Props) => {
         </View>
       )}
 
-      {esReservaPendiente && user?.rol !== "CONDUCTOR" && (
+      {esReservaPendiente && !esConductorDelViaje && (
         <TouchableOpacity
           style={[styles.button, styles.cancelButton, { marginTop: 12 }]}
           onPress={() =>

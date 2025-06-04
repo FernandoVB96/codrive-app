@@ -116,7 +116,6 @@ const BuscarScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#344356" />
 
-      {/* Logo en esquina superior izquierda */}
       <View style={styles.logoContainer}>
         <View style={styles.logoWrapper}>
           <Image source={require("../../assets/logo.png")} style={styles.logo} />
@@ -148,20 +147,24 @@ const BuscarScreen = () => {
             <Text style={styles.text}>Salida: {formatearFecha(item.fechaHoraSalida)}</Text>
             <Text style={styles.text}>Llegada: {formatearFecha(item.fechaHoraLlegada)}</Text>
             <Text style={styles.text}>Plazas disponibles: {item.plazasDisponibles}</Text>
-            <PrimaryButton
-              label="Reservar"
-              backgroundColor="#5cb85c"
-              onPress={() =>
-                Alert.alert(
-                  "Confirmar reserva",
-                  `¿Quieres reservar plaza para el viaje ${item.origen} -> ${item.destino}?`,
-                  [
-                    { text: "No" },
-                    { text: "Sí", onPress: () => crearReserva(item.id) },
-                  ]
-                )
-              }
-            />
+            {item.plazasDisponibles > 0 ? (
+              <PrimaryButton
+                label="Reservar"
+                backgroundColor="#5cb85c"
+                onPress={() =>
+                  Alert.alert(
+                    "Confirmar reserva",
+                    `¿Quieres reservar plaza para el viaje ${item.origen} -> ${item.destino}?`,
+                    [
+                      { text: "No" },
+                      { text: "Sí", onPress: () => crearReserva(item.id) },
+                    ]
+                  )
+                }
+              />
+            ) : (
+              <Text style={styles.noSeats}>Sin plazas disponibles</Text>
+            )}
           </View>
         )}
       />
@@ -209,6 +212,11 @@ const styles = StyleSheet.create({
   text: {
     color: "#ffffff",
     marginBottom: 4,
+  },
+  noSeats: {
+    marginTop: 8,
+    color: "#ccc",
+    fontStyle: "italic",
   },
   header: {
     fontSize: 24,

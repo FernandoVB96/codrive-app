@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import PrimaryButton from "../components/PrimaryButton";
 import SecondaryButton from "../components/SecondaryButton";
 
@@ -18,34 +18,42 @@ interface Props {
   onCancelar: (id: number) => void;
   onAbandonar: (id: number) => void;
   formatearFecha: (fechaIso: string) => string;
+  onPress?: () => void; // <-- nuevo prop para manejar la navegación
 }
 
-const ViajeCard = ({ viaje, onCancelar, onAbandonar, formatearFecha }: Props) => {
+const ViajeCard = ({
+  viaje,
+  onCancelar,
+  onAbandonar,
+  formatearFecha,
+  onPress,
+}: Props) => {
   const esConductor = viaje.rolUsuario === "CONDUCTOR";
 
   return (
-    <View style={styles.viajeCard}>
-      <Text style={styles.title}>
-        {viaje.origen} ➡️ {viaje.destino}
-      </Text>
-        <Text style={styles.text}>
-            Salida: {viaje.fechaHoraSalida ? formatearFecha(viaje.fechaHoraSalida) : "Sin datos"}
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+      <View style={styles.viajeCard}>
+        <Text style={styles.title}>
+          {viaje.origen} ➡️ {viaje.destino}
         </Text>
         <Text style={styles.text}>
-            Llegada: {viaje.fechaHoraLlegada ? formatearFecha(viaje.fechaHoraLlegada) : "Sin datos"}
+          Salida: {viaje.fechaHoraSalida ? formatearFecha(viaje.fechaHoraSalida) : "Sin datos"}
         </Text>
-      <Text style={styles.text}>Plazas disponibles: {viaje.plazasDisponibles}</Text>
-      <Text style={styles.rol}>{esConductor ? "Eres el conductor" : "Eres pasajero"}</Text>
+        <Text style={styles.text}>
+          Llegada: {viaje.fechaHoraLlegada ? formatearFecha(viaje.fechaHoraLlegada) : "Sin datos"}
+        </Text>
+        <Text style={styles.text}>Plazas disponibles: {viaje.plazasDisponibles}</Text>
+        <Text style={styles.rol}>{esConductor ? "Eres el conductor" : "Eres pasajero"}</Text>
 
-      {esConductor ? (
-        <PrimaryButton label="Cancelar viaje" onPress={() => onCancelar(viaje.id)} />
-      ) : (
-        <SecondaryButton label="Abandonar viaje" onPress={() => onAbandonar(viaje.id)} />
-      )}
-    </View>
+        {esConductor ? (
+          <PrimaryButton label="Cancelar viaje" onPress={() => onCancelar(viaje.id)} />
+        ) : (
+          <SecondaryButton label="Abandonar viaje" onPress={() => onAbandonar(viaje.id)} />
+        )}
+      </View>
+    </TouchableOpacity>
   );
 };
-
 
 const styles = StyleSheet.create({
   viajeCard: {

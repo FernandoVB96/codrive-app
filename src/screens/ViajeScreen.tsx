@@ -11,8 +11,14 @@ import {
   View,
 } from "react-native";
 import { AuthContext } from "../auth/AuthContext";
-import { useFocusEffect } from "@react-navigation/native";
+import {
+  useFocusEffect,
+  useNavigation,
+  NavigationProp,
+} from "@react-navigation/native";
 import ViajeCard from "../components/ViajeCard";
+import { RootStackParamList } from "../types/navigation";
+import PrimaryButton from "../components/PrimaryButton";
 
 type Viaje = {
   id: number;
@@ -24,8 +30,11 @@ type Viaje = {
   rolUsuario: "CONDUCTOR" | "PASAJERO";
 };
 
+type ViajeScreenNavigationProp = NavigationProp<RootStackParamList, "Viaje">;
+
 const ViajeScreen = () => {
   const { token } = useContext(AuthContext);
+  const navigation = useNavigation<ViajeScreenNavigationProp>();
   const [viajes, setViajes] = useState<Viaje[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -100,6 +109,7 @@ const ViajeScreen = () => {
       onCancelar={cancelarViaje}
       onAbandonar={abandonarViaje}
       formatearFecha={formatearFecha}
+      onPress={() => navigation.navigate("DetalleViaje", { viajeId: item.id })}
     />
   );
 
@@ -107,7 +117,6 @@ const ViajeScreen = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#344356" />
 
-      {/* Logo pequeño en esquina superior izquierda */}
       <View style={styles.logoContainer}>
         <View style={styles.logoWrapper}>
           <Image source={require("../../assets/logo.png")} style={styles.logo} />
@@ -115,6 +124,12 @@ const ViajeScreen = () => {
       </View>
 
       <Text style={styles.header}>Mis viajes</Text>
+
+      <PrimaryButton
+        label="Buscar viajes"
+        onPress={() => navigation.navigate("Buscar")}
+        backgroundColor="#d6765e"
+      />
 
       {loading ? (
         <ActivityIndicator size="large" color="#d6765e" />
