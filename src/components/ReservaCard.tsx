@@ -105,7 +105,11 @@ const ReservaCard = ({ reserva, onActualizar }: Props) => {
         Fecha salida: {formatearFecha(reserva.viaje.fechaHoraSalida)}
       </Text>
       <Text style={styles.text}>Estado: {reserva.estado}</Text>
-      <Text style={styles.text}>Conductor: {reserva.viaje.conductor.nombre}</Text>
+      <Text style={styles.text}>
+        {user?.rol?.toUpperCase() === "CONDUCTOR"
+          ? `Pasajero: ${reserva.usuario.nombre}`
+          : `Conductor: ${reserva.viaje.conductor.nombre}`}
+      </Text>
 
       {esReservaPendiente && esConductorDelViaje && (
         <View style={{ flexDirection: "row", marginTop: 12 }}>

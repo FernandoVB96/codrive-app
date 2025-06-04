@@ -12,6 +12,9 @@ import {
 } from "react-native";
 import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { AuthContext } from "../auth/AuthContext";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+
 
 import InputField from "../components/InputField";
 import PrimaryButton from "../components/PrimaryButton";
@@ -59,25 +62,28 @@ const PublicarScreen = () => {
   const [showLlegadaPicker, setShowLlegadaPicker] = useState(false);
 
   // Consultar vehículos registrados al montar
-  useEffect(() => {
-    const fetchVehiculos = async () => {
-      if (!token || !user) return;
+  useFocusEffect(
+    useCallback(() => {
+      const fetchVehiculos = async () => {
+        if (!token || !user) return;
 
-      try {
-        const response = await fetch(`http://192.168.1.130:8080/usuarios/${user.id}/vehiculos`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) throw new Error("Error al obtener vehículos");
+        try {
+          const response = await fetch(`http://192.168.1.130:8080/usuarios/${user.id}/vehiculos`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!response.ok) throw new Error("Error al obtener vehículos");
 
-        const data = await response.json();
-        setVehiculoRegistrado(Array.isArray(data) && data.length > 0);
-      } catch (error) {
-        console.log("No se pudo verificar vehículos:", error);
-      }
-    };
+          const data = await response.json();
+          setVehiculoRegistrado(Array.isArray(data) && data.length > 0);
+        } catch (error) {
+          console.log("No se pudo verificar vehículos:", error);
+        }
+      };
 
-    fetchVehiculos();
-  }, [token, user]);
+      fetchVehiculos();
+    }, [token, user])
+  );
+
 
   useEffect(() => {
     if (!rolPreguntado && user?.rol !== "CONDUCTOR") {
@@ -342,121 +348,124 @@ const PublicarScreen = () => {
     }
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-            <View style={styles.logoContainer}>
-              <View style={styles.logoWrapper}>
-                <Image source={require("../../assets/logo.png")} style={styles.logo} />
-              </View>
-            </View>
-      <ScrollView contentContainerStyle={styles.scrollView}>
-        
-        <Text style={styles.title}>¡Prepárate para tu próximo viaje! 🚗💨</Text>
+return (
+  <SafeAreaView style={styles.container}>
+    <StatusBar barStyle="light-content" />
+    <View style={styles.logoContainer}>
+      <View style={styles.logoWrapper}>
+        <Image source={require("../../assets/logo.png")} style={styles.logo} />
+      </View>
+    </View>
 
-        <Text style={styles.label}>De donde quieres salir?</Text>
-        <InputField
-          value={origen}
-          onChangeText={setOrigen}
-          placeholder="Lugar de origen"
-          placeholderTextColor="#9c9c96"
-        />
+    <ScrollView contentContainerStyle={styles.scrollView}>
+      <Text style={styles.title}>¡Prepárate para tu próximo viaje! 🚗💨</Text>
 
-        <Text style={styles.label}>Donde quieres ir?</Text>
-        <InputField
-          value={destino}
-          onChangeText={setDestino}
-          placeholder="Lugar de destino"
-          placeholderTextColor="#9c9c96"
-        />
+      {!vehiculoRegistrado && !registroVehiculoActivo && (
+        <>
+          <Text style={styles.label}>
+            Para publicar un viaje necesitamos los datos de tu vehículo.
+          </Text>
+          <PrimaryButton label="Registrar vehículo" onPress={() => setRegistroVehiculoActivo(true)} />
+        </>
+      )}
 
-        <Text style={styles.label}>Cuando quieres salir?</Text>
-        <PrimaryButton label={formatDateTime(fechaSalida)} onPress={openSalidaPicker} />
-
-        {showSalidaPicker && (
-          <DateTimePicker
-            value={fechaSalida}
-            mode="datetime"
-            display="default"
-            onChange={onChangeSalida}
-            textColor="#fff"
+      {registroVehiculoActivo && (
+        <>
+          <Text style={styles.label}>Marca:</Text>
+          <InputField
+            value={marca}
+            onChangeText={setMarca}
+            placeholder="Marca del vehículo"
+            placeholderTextColor="#9c9c96"
           />
-        )}
 
-        <Text style={styles.label}>Cuando quieres llegar?</Text>
-        <PrimaryButton label={formatDateTime(fechaLlegada)} onPress={openLlegadaPicker} />
-
-        {showLlegadaPicker && (
-          <DateTimePicker
-            value={fechaLlegada}
-            mode="datetime"
-            display="default"
-            onChange={onChangeLlegada}
-            textColor="#fff"
+          <Text style={styles.label}>Modelo:</Text>
+          <InputField
+            value={modelo}
+            onChangeText={setModelo}
+            placeholder="Modelo del vehículo"
+            placeholderTextColor="#9c9c96"
           />
-        )}
 
-        <Text style={styles.label}>Cuantos pasajeros puede llevar?</Text>
-        <InputField
-          value={plazas}
-          onChangeText={setPlazas}
-          placeholder="Número de plazas"
-          placeholderTextColor="#9c9c96"
-          keyboardType="numeric"
-        />
-
-        {rolConfirmado && !vehiculoRegistrado && !registroVehiculoActivo && (
-          <SecondaryButton
-            label="Registrar vehículo"
-            onPress={() => setRegistroVehiculoActivo(true)}
+          <Text style={styles.label}>Matrícula:</Text>
+          <InputField
+            value={matricula}
+            onChangeText={setMatricula}
+            placeholder="Matrícula"
+            placeholderTextColor="#9c9c96"
           />
-        )}
 
-        {registroVehiculoActivo && (
-          <>
-            <Text style={styles.label}>Marca:</Text>
-            <InputField
-              value={marca}
-              onChangeText={setMarca}
-              placeholder="Marca del vehículo"
-              placeholderTextColor="#9c9c96"
+          <Text style={styles.label}>Plazas disponibles:</Text>
+          <InputField
+            value={plazasDisponibles}
+            onChangeText={setPlazasDisponibles}
+            placeholder="Número de plazas disponibles"
+            placeholderTextColor="#9c9c96"
+            keyboardType="numeric"
+          />
+
+          <PrimaryButton label="Agregar vehículo" onPress={handleAgregarVehiculo} />
+        </>
+      )}
+
+      {vehiculoRegistrado && rolConfirmado && !registroVehiculoActivo && (
+        <>
+          <Text style={styles.label}>¿De dónde quieres salir?</Text>
+          <InputField
+            value={origen}
+            onChangeText={setOrigen}
+            placeholder="Lugar de origen"
+            placeholderTextColor="#9c9c96"
+          />
+
+          <Text style={styles.label}>¿A dónde quieres ir?</Text>
+          <InputField
+            value={destino}
+            onChangeText={setDestino}
+            placeholder="Lugar de destino"
+            placeholderTextColor="#9c9c96"
+          />
+
+          <Text style={styles.label}>¿Cuándo quieres salir?</Text>
+          <PrimaryButton label={formatDateTime(fechaSalida)} onPress={openSalidaPicker} />
+          {showSalidaPicker && (
+            <DateTimePicker
+              value={fechaSalida}
+              mode="datetime"
+              display="default"
+              onChange={onChangeSalida}
+              textColor="#fff"
             />
+          )}
 
-            <Text style={styles.label}>Modelo:</Text>
-            <InputField
-              value={modelo}
-              onChangeText={setModelo}
-              placeholder="Modelo del vehículo"
-              placeholderTextColor="#9c9c96"
+          <Text style={styles.label}>¿Cuándo quieres llegar?</Text>
+          <PrimaryButton label={formatDateTime(fechaLlegada)} onPress={openLlegadaPicker} />
+          {showLlegadaPicker && (
+            <DateTimePicker
+              value={fechaLlegada}
+              mode="datetime"
+              display="default"
+              onChange={onChangeLlegada}
+              textColor="#fff"
             />
+          )}
 
-            <Text style={styles.label}>Matrícula:</Text>
-            <InputField
-              value={matricula}
-              onChangeText={setMatricula}
-              placeholder="Matrícula"
-              placeholderTextColor="#9c9c96"
-            />
+          <Text style={styles.label}>¿Cuántos pasajeros puedes llevar?</Text>
+          <InputField
+            value={plazas}
+            onChangeText={setPlazas}
+            placeholder="Número de plazas"
+            placeholderTextColor="#9c9c96"
+            keyboardType="numeric"
+          />
 
-            <Text style={styles.label}>Plazas disponibles:</Text>
-            <InputField
-              value={plazasDisponibles}
-              onChangeText={setPlazasDisponibles}
-              placeholder="Número de plazas disponibles"
-              placeholderTextColor="#9c9c96"
-              keyboardType="numeric"
-            />
-
-            <PrimaryButton label="Agregar vehículo" onPress={handleAgregarVehiculo} />
-          </>
-        )}
-
-        {rolConfirmado && vehiculoRegistrado && (
           <PrimaryButton label="Publicar viaje" onPress={handlePublicar} />
-        )}
-      </ScrollView>
-    </SafeAreaView>
-  );
+        </>
+      )}
+    </ScrollView>
+  </SafeAreaView>
+);
+
 };
 
 const styles = StyleSheet.create({

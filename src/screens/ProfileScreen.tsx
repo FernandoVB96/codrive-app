@@ -18,6 +18,8 @@ import { AuthContext } from "../auth/AuthContext";
 import InputField from "../components/InputField";
 import PrimaryButton from "../components/PrimaryButton";
 import SecondaryButton from "../components/SecondaryButton";
+import { useFocusEffect } from "@react-navigation/native";
+
 
 interface Vehiculo {
   id: number;
@@ -50,8 +52,10 @@ const ProfileScreen = () => {
 
   const [showAddVehiculoForm, setShowAddVehiculoForm] = useState(false);
 
-  useEffect(() => {
+useFocusEffect(
+  React.useCallback(() => {
     if (!user || !token) return;
+
     setLoadingPerfil(true);
     fetch("http://192.168.1.130:8080/usuarios/mi-perfil", {
       headers: { Authorization: `Bearer ${token}` },
@@ -69,7 +73,9 @@ const ProfileScreen = () => {
       });
 
     cargarVehiculos();
-  }, [user, token]);
+  }, [user, token])
+);
+
 
   const cargarVehiculos = () => {
     if (!user || !token) return;
