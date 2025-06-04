@@ -3,7 +3,6 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
   StyleSheet,
   Alert,
   ActivityIndicator,
@@ -11,9 +10,11 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
+  Image,
 } from "react-native";
 import { AuthContext } from "../auth/AuthContext";
 import * as Notifications from "expo-notifications";
+import ReservaCard from "../components/ReservaCard";
 
 type Usuario = {
   id: number;
@@ -35,12 +36,14 @@ type Viaje = {
   pasajeros: Usuario[];
 };
 
+type EstadoReserva = "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | string;
+
 type Reserva = {
   id: number;
   usuario: Usuario;
   viaje: Viaje;
   fechaReserva: string;
-  estado: string;
+  estado: EstadoReserva;
 };
 
 const ReservasScreen = () => {
@@ -49,104 +52,72 @@ const ReservasScreen = () => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-const fetchReservas = async () => {
-  if (!user) {
-    console.log("No hay usuario logueado.");
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const reservasPasajeroUrl = `http://192.168.1.130:8080/reservas/usuario/${user.id}`;
-    const headers = { Authorization: `Bearer ${token}` };
-
-    // 🟢 Fetch de reservas como pasajero (siempre)
-    const pasajeroResp = await fetch(reservasPasajeroUrl, { headers });
-
-    if (!pasajeroResp.ok) {
-      throw new Error("Error al cargar reservas como pasajero");
+  const fetchReservas = async () => {
+    if (!user) {
+      console.log("No hay usuario logueado.");
+      return;
     }
 
-    const reservasPasajero = await pasajeroResp.json();
+    setLoading(true);
 
-    let todasLasReservas = Array.isArray(reservasPasajero)
-      ? reservasPasajero
-      : [];
+    try {
+      const reservasPasajeroUrl = `http://192.168.1.130:8080/reservas/usuario/${user.id}`;
+      const headers = { Authorization: `Bearer ${token}` };
 
-    // 🟡 Si es conductor, también pedimos sus viajes
-    if (user.rol?.toUpperCase() === "CONDUCTOR") {
-      const conductorUrl = `http://192.168.1.130:8080/reservas/mis-viajes/reservas`;
+      // 🟢 Fetch reservas como pasajero
+      const pasajeroResp = await fetch(reservasPasajeroUrl, { headers });
 
-      const conductorResp = await fetch(conductorUrl, { headers });
-
-      if (!conductorResp.ok) {
-        throw new Error("Error al cargar reservas como conductor");
+      if (!pasajeroResp.ok) {
+        throw new Error("Error al cargar reservas como pasajero");
       }
 
-      const reservasConductor = await conductorResp.json();
+      const reservasPasajero = await pasajeroResp.json();
 
-      if (Array.isArray(reservasConductor)) {
-        // 🧠 Evitá duplicados si por casualidad una reserva aparece en ambos
-        const idsExistentes = new Set(todasLasReservas.map((r) => r.id));
-        reservasConductor.forEach((res) => {
-          if (!idsExistentes.has(res.id)) todasLasReservas.push(res);
-        });
+      let todasLasReservas = Array.isArray(reservasPasajero)
+        ? reservasPasajero
+        : [];
+
+      // 🟡 Si es conductor, también pedimos sus viajes
+      if (user.rol?.toUpperCase() === "CONDUCTOR") {
+        const conductorUrl = `http://192.168.1.130:8080/reservas/mis-viajes/reservas`;
+
+        const conductorResp = await fetch(conductorUrl, { headers });
+
+        if (!conductorResp.ok) {
+          throw new Error("Error al cargar reservas como conductor");
+        }
+
+        const reservasConductor = await conductorResp.json();
+
+        if (Array.isArray(reservasConductor)) {
+          const idsExistentes = new Set(todasLasReservas.map((r) => r.id));
+          reservasConductor.forEach((res) => {
+            if (!idsExistentes.has(res.id)) todasLasReservas.push(res);
+          });
+        }
       }
-    }
-    setReservas(todasLasReservas);
-  } catch (error) {
-    console.error("Error en fetchReservas:", error);
-    Alert.alert("Error", "No se pudieron cargar las reservas.");
-  } finally {
-    setLoading(false);
-    setRefreshing(false);
-  }
-};
 
+      // Ordenar reservas: PENDIENTE (1), CONFIRMADA (2), CANCELADA (3)
+      const prioridad = {
+        PENDIENTE: 1,
+        CONFIRMADA: 2,
+        CANCELADA: 3,
+      };
 
-  const confirmarReserva = async (id: number) => {
-    try {
-      const response = await fetch(
-        `http://192.168.1.130:8080/reservas/${id}/confirmar`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      if (!response.ok) throw new Error("Error al confirmar reserva");
-      Alert.alert("Reserva confirmada");
-      fetchReservas();
+      todasLasReservas.sort((a, b) => {
+        const prioridadA = prioridad[a.estado as keyof typeof prioridad] ?? 99;
+        const prioridadB = prioridad[b.estado as keyof typeof prioridad] ?? 99;
+        return prioridadA - prioridadB;
+      });
+
+      setReservas(todasLasReservas);
     } catch (error) {
-      Alert.alert("Error", "No se pudo confirmar la reserva.");
+      console.error("Error en fetchReservas:", error);
+      Alert.alert("Error", "No se pudieron cargar las reservas.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-  };
-
-  const cancelarReserva = async (id: number) => {
-    try {
-      const response = await fetch(
-        `http://192.168.1.130:8080/reservas/${id}/cancelar`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      if (!response.ok) throw new Error("Error al cancelar reserva");
-      Alert.alert("Reserva cancelada");
-      fetchReservas();
-    } catch (error) {
-      Alert.alert("Error", "No se pudo cancelar la reserva.");
-    }
-  };
-
-  const formatearFecha = (fechaIso: string) => {
-    const fecha = new Date(fechaIso);
-    const dia = String(fecha.getDate()).padStart(2, "0");
-    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-    const anio = String(fecha.getFullYear()).slice(-2);
-    const hora = fecha.getHours();
-    const minutos = String(fecha.getMinutes()).padStart(2, "0");
-    return `${dia}/${mes}/${anio} ${hora}:${minutos}h`;
   };
 
   useEffect(() => {
@@ -198,6 +169,12 @@ const fetchReservas = async () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+            <View style={styles.logoContainer}>
+              <View style={styles.logoWrapper}>
+                <Image source={require("../../assets/logo.png")} style={styles.logo} />
+              </View>
+            </View>
+      <Text style={styles.header}>Reservas de viajes</Text>
       <FlatList
         data={reservas}
         keyExtractor={(item) => item.id.toString()}
@@ -210,79 +187,9 @@ const fetchReservas = async () => {
             tintColor="#e2ae9c"
           />
         }
-        renderItem={({ item }) => {
-          const esReservaPendiente = item.estado === "PENDIENTE";
-
-          return (
-            <View style={styles.reserva}>
-              <Text style={styles.title}>
-                {item.viaje.origen} ➡️ {item.viaje.destino}
-              </Text>
-              <Text style={styles.text}>
-                Fecha salida: {formatearFecha(item.viaje.fechaHoraSalida)}
-              </Text>
-              <Text style={styles.text}>Estado: {item.estado}</Text>
-              <Text style={styles.text}>
-                Conductor: {item.viaje.conductor.nombre}
-              </Text>
-              <Text style={styles.text}>Pasajero: {item.usuario.nombre}</Text>
-
-              {esReservaPendiente && user.rol === "CONDUCTOR" && (
-                <View style={{ flexDirection: "row", marginTop: 12 }}>
-                  <TouchableOpacity
-                    style={[styles.button, styles.confirmButton]}
-                    onPress={() =>
-                      Alert.alert(
-                        "Confirmar reserva",
-                        "¿Seguro que quieres confirmar la reserva?",
-                        [
-                          { text: "No" },
-                          { text: "Sí", onPress: () => confirmarReserva(item.id) },
-                        ]
-                      )
-                    }
-                  >
-                    <Text style={styles.buttonText}>Aceptar</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.button, styles.cancelButton]}
-                    onPress={() =>
-                      Alert.alert(
-                        "Cancelar reserva",
-                        "¿Seguro que quieres cancelar la reserva?",
-                        [
-                          { text: "No" },
-                          { text: "Sí", onPress: () => cancelarReserva(item.id) },
-                        ]
-                      )
-                    }
-                  >
-                    <Text style={styles.buttonText}>Rechazar</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              {esReservaPendiente && user.rol !== "CONDUCTOR" && (
-                <TouchableOpacity
-                  style={[styles.button, styles.cancelButton, { marginTop: 12 }]}
-                  onPress={() =>
-                    Alert.alert(
-                      "Cancelar reserva",
-                      "¿Seguro que quieres cancelar la reserva?",
-                      [
-                        { text: "No" },
-                        { text: "Sí", onPress: () => cancelarReserva(item.id) },
-                      ]
-                    )
-                  }
-                >
-                  <Text style={styles.buttonText}>Cancelar reserva</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          );
-        }}
+        renderItem={({ item }) => (
+          <ReservaCard reserva={item} onActualizar={fetchReservas} />
+        )}
       />
     </SafeAreaView>
   );
@@ -294,39 +201,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#344356",
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
-  reserva: {
-    backgroundColor: "#151920",
-    padding: 16,
-    marginBottom: 12,
-    borderRadius: 8,
-  },
-  title: {
-    fontWeight: "bold",
-    marginBottom: 4,
-    fontSize: 16,
-    color: "#e2ae9c",
-  },
-  text: {
-    color: "#ffffff",
-    marginBottom: 2,
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: "center",
-    marginHorizontal: 4,
-  },
-  confirmButton: {
-    backgroundColor: "#5cb85c",
-  },
-  cancelButton: {
-    backgroundColor: "#d9534f",
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
   center: {
     flex: 1,
     justifyContent: "center",
@@ -335,6 +209,30 @@ const styles = StyleSheet.create({
   noReservasText: {
     color: "#e2ae9c",
     fontSize: 18,
+  },
+  header: {
+    paddingTop: 57,
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+    color: "#e2ae9c",
+  },
+      logoContainer: {
+    position: "absolute",
+    top: StatusBar.currentHeight ? StatusBar.currentHeight + 8 : 24,
+    left: 16,
+    zIndex: 10,
+  },
+  logoWrapper: {
+    backgroundColor: "#e2ae9c",
+    borderRadius: 50,
+    padding: 6,
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    resizeMode: "contain",
   },
 });
 

@@ -2,8 +2,6 @@ import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   FlatList,
   Alert,
   SafeAreaView,
@@ -11,8 +9,15 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity,
+  StatusBar,
+  Image,
 } from "react-native";
 import { AuthContext } from "../auth/AuthContext";
+
+import InputField from "../components/InputField";
+import PrimaryButton from "../components/PrimaryButton";
+import SecondaryButton from "../components/SecondaryButton";
 
 interface Vehiculo {
   id: number;
@@ -41,6 +46,8 @@ const ProfileScreen = () => {
   const [editModelo, setEditModelo] = useState("");
   const [editMatricula, setEditMatricula] = useState("");
   const [editPlazas, setEditPlazas] = useState("");
+
+  const [showAddVehiculoForm, setShowAddVehiculoForm] = useState(false);
 
   useEffect(() => {
     if (!user || !token) return;
@@ -151,6 +158,7 @@ const ProfileScreen = () => {
         setNModelo("");
         setNMatricula("");
         setNPlazas("");
+        setShowAddVehiculoForm(false);
         Alert.alert("Vehículo agregado");
       })
       .catch((e) => Alert.alert("Error", e.message));
@@ -219,7 +227,13 @@ const ProfileScreen = () => {
         setVehiculos((old) =>
           old.map((v) =>
             v.id === editVehiculoId
-              ? { ...v, marca: editMarca, modelo: editModelo, matricula: editMatricula, plazasDisponibles: plazasNum }
+              ? {
+                  ...v,
+                  marca: editMarca,
+                  modelo: editModelo,
+                  matricula: editMatricula,
+                  plazasDisponibles: plazasNum,
+                }
               : v
           )
         );
@@ -227,6 +241,17 @@ const ProfileScreen = () => {
         Alert.alert("Vehículo actualizado");
       })
       .catch(() => Alert.alert("Error", "No se pudo actualizar vehículo"));
+  };
+
+  const confirmarCerrarSesion = () => {
+    Alert.alert(
+      "Cerrar sesión",
+      "¿Estás seguro que quieres cerrar sesión?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Cerrar sesión", style: "destructive", onPress: logout },
+      ]
+    );
   };
 
   if (!user) {
@@ -240,7 +265,22 @@ const ProfileScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+      <StatusBar barStyle="light-content" backgroundColor="#121212" />
+      <View style={styles.logoContainer}>
+        <View style={styles.logoWrapper}>
+          <Image source={require("../../assets/logo.png")} style={styles.logo} />
+        </View>
+      </View>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={confirmarCerrarSesion}>
+          <Text style={styles.logoutText}>🔒</Text>
+        </TouchableOpacity>
+      </View>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
         {loadingPerfil ? (
           <View style={styles.center}>
             <ActivityIndicator size="large" color="#e2ae9c" />
@@ -253,53 +293,129 @@ const ProfileScreen = () => {
             ListHeaderComponent={
               <>
                 <Text style={styles.title}>Mi Perfil</Text>
-                <TextInput style={styles.input} value={nombre} onChangeText={setNombre} placeholder="Nombre" placeholderTextColor="#9c9c96" />
-                <TouchableOpacity style={styles.button} onPress={handleActualizarPerfil}>
-                  <Text style={styles.buttonText}>Actualizar Perfil</Text>
+                <InputField
+                  placeholder="Nombre"
+                  value={nombre}
+                  onChangeText={setNombre}
+                />
+                <InputField
+                  placeholder="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+                <PrimaryButton
+                  label="Actualizar Perfil"
+                  onPress={handleActualizarPerfil}
+                />
+
+                {/* Botón para mostrar/ocultar formulario de agregar vehículo */}
+                <TouchableOpacity
+                  style={styles.toggleButton}
+                  onPress={() => setShowAddVehiculoForm((prev) => !prev)}
+                >
+                  <Text style={styles.toggleButtonText}>
+                    {showAddVehiculoForm ? "Cancelar" : "Agregar Vehículo"}
+                  </Text>
                 </TouchableOpacity>
 
-                <Text style={[styles.title, { marginTop: 30 }]}>Agregar Vehículo</Text>
-                <TextInput style={styles.input} placeholder="Marca" value={nMarca} onChangeText={setNMarca} placeholderTextColor="#9c9c96" />
-                <TextInput style={styles.input} placeholder="Modelo" value={nModelo} onChangeText={setNModelo} placeholderTextColor="#9c9c96" />
-                <TextInput style={styles.input} placeholder="Matrícula" value={nMatricula} onChangeText={setNMatricula} placeholderTextColor="#9c9c96" />
-                <TextInput style={styles.input} placeholder="Plazas disponibles" value={nPlazas} onChangeText={setNPlazas} keyboardType="numeric" placeholderTextColor="#9c9c96" />
-                <TouchableOpacity style={styles.button} onPress={handleAgregarVehiculo}>
-                  <Text style={styles.buttonText}>Agregar Vehículo</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-                  <Text style={styles.buttonText}>Cerrar sesión</Text>
-                </TouchableOpacity>
+                {showAddVehiculoForm && (
+                  <>
+                    <InputField
+                      placeholder="Marca"
+                      value={nMarca}
+                      onChangeText={setNMarca}
+                    />
+                    <InputField
+                      placeholder="Modelo"
+                      value={nModelo}
+                      onChangeText={setNModelo}
+                    />
+                    <InputField
+                      placeholder="Matrícula"
+                      value={nMatricula}
+                      onChangeText={setNMatricula}
+                    />
+                    <InputField
+                      placeholder="Plazas disponibles"
+                      value={nPlazas}
+                      onChangeText={setNPlazas}
+                      keyboardType="numeric"
+                    />
+                    <PrimaryButton
+                      label="Agregar Vehículo"
+                      onPress={handleAgregarVehiculo}
+                    />
+                  </>
+                )}
 
                 <Text style={[styles.title, { marginTop: 30 }]}>Mis Vehículos</Text>
-                {loadingVehiculos && <ActivityIndicator size="large" color="#e2ae9c" />}
+                {loadingVehiculos && (
+                  <ActivityIndicator size="large" color="#e2ae9c" />
+                )}
               </>
             }
             renderItem={({ item }) =>
               editVehiculoId === item.id ? (
-                <View style={styles.vehiculoCard}>
-                  <TextInput style={styles.input} value={editMarca} onChangeText={setEditMarca} placeholder="Marca" placeholderTextColor="#9c9c96" />
-                  <TextInput style={styles.input} value={editModelo} onChangeText={setEditModelo} placeholder="Modelo" placeholderTextColor="#9c9c96" />
-                  <TextInput style={styles.input} value={editMatricula} onChangeText={setEditMatricula} placeholder="Matrícula" placeholderTextColor="#9c9c96" />
-                  <TextInput style={styles.input} value={editPlazas} onChangeText={setEditPlazas} placeholder="Plazas disponibles" keyboardType="numeric" placeholderTextColor="#9c9c96" />
-                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                    <TouchableOpacity style={styles.smallButton} onPress={guardarEdicion}>
-                      <Text style={styles.buttonText}>Guardar</Text>
+                <View style={styles.vehiculoContainer}>
+                  <InputField
+                    value={editMarca}
+                    onChangeText={setEditMarca}
+                    placeholder="Marca"
+                  />
+                  <InputField
+                    value={editModelo}
+                    onChangeText={setEditModelo}
+                    placeholder="Modelo"
+                  />
+                  <InputField
+                    value={editMatricula}
+                    onChangeText={setEditMatricula}
+                    placeholder="Matrícula"
+                  />
+                  <InputField
+                    value={editPlazas}
+                    onChangeText={setEditPlazas}
+                    placeholder="Plazas disponibles"
+                    keyboardType="numeric"
+                  />
+                  <View style={styles.inlineButtons}>
+                    <TouchableOpacity
+                      style={[styles.smallButton, styles.cancelButton]}
+                      onPress={cancelarEdicion}
+                    >
+                      <Text style={styles.smallButtonText}>Cancelar</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.smallButton, { backgroundColor: "#9c9c96" }]} onPress={cancelarEdicion}>
-                      <Text style={{ color: "#333" }}>Cancelar</Text>
+                    <TouchableOpacity
+                      style={[styles.smallButton, styles.saveButton]}
+                      onPress={guardarEdicion}
+                    >
+                      <Text style={styles.smallButtonText}>Guardar</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
               ) : (
-                <View style={styles.vehiculoCard}>
-                  <Text style={styles.vehiculoText}>{item.marca} {item.modelo} - {item.matricula} - Plazas: {item.plazasDisponibles}</Text>
-                  <View style={{ flexDirection: "row" }}>
-                    <TouchableOpacity style={[styles.smallButton, { backgroundColor: "#3b82f6", marginRight: 10 }]} onPress={() => comenzarEdicion(item)}>
-                      <Text style={styles.buttonText}>Editar</Text>
+                <View style={styles.vehiculoContainer}>
+                  <Text style={styles.vehiculoText}>
+                    {item.marca} {item.modelo}
+                  </Text>
+                  <Text style={styles.vehiculoText}>Matrícula: {item.matricula}</Text>
+                  <Text style={styles.vehiculoText}>
+                    Plazas disponibles: {item.plazasDisponibles}
+                  </Text>
+                  <View style={styles.inlineButtons}>
+                    <TouchableOpacity
+                      style={[styles.smallButton, styles.editButton]}
+                      onPress={() => comenzarEdicion(item)}
+                    >
+                      <Text style={styles.smallButtonText}>Editar</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.smallButton, { backgroundColor: "#ef4444" }]} onPress={() => handleEliminarVehiculo(item.id)}>
-                      <Text style={styles.buttonText}>Eliminar</Text>
+                    <TouchableOpacity
+                      style={[styles.smallButton, styles.deleteButton]}
+                      onPress={() => handleEliminarVehiculo(item.id)}
+                    >
+                      <Text style={styles.smallButtonText}>Eliminar</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -313,47 +429,104 @@ const ProfileScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#344356" },
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 24, fontWeight: "bold", color: "#e2ae9c", marginBottom: 12 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#9c9c96",
-    padding: 10,
-    borderRadius: 6,
-    marginBottom: 12,
-    backgroundColor: "#151920",
-    color: "white",
+  container: {
+    flex: 1,
+    paddingTop: StatusBar.currentHeight || 0,
+    paddingHorizontal: 10,
+    backgroundColor: "#344356",
   },
-  button: {
-    backgroundColor: "#d6765e",
-    paddingVertical: 12,
-    borderRadius: 6,
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  logoutButton: {
-    backgroundColor: "#EF4444",
-    paddingVertical: 12,
-    borderRadius: 6,
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  buttonText: { color: "white", fontWeight: "600" },
-  vehiculoCard: {
-    backgroundColor: "#151920",
-    padding: 12,
-    borderRadius: 6,
-    marginBottom: 12,
-    borderColor: "#9c9c96",
-    borderWidth: 1,
-  },
-  vehiculoText: { fontSize: 16, color: "#ffffff", marginBottom: 8 },
-  smallButton: {
-    paddingVertical: 8,
+  header: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "flex-end",
     paddingHorizontal: 16,
-    borderRadius: 4,
+    paddingVertical: 8,
+  },
+  logoutText: {
+    color: "#fff",
+    padding: 8,
+    borderRadius: 50,
+    fontSize: 10,
+    fontWeight: "600",
+    backgroundColor: "darkred",
+    borderWidth: 1,
+    borderColor: "#e2ae9c",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+    color: "#e2ae9c",
+  },
+  center: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
+  },
+  vehiculoContainer: {
+    backgroundColor: "#222831",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+  },
+  vehiculoText: {
+    color: "#fff",
+    marginBottom: 4,
+  },
+  inlineButtons: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 10,
+  },
+  smallButton: {
+    marginLeft: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 5,
+  },
+  cancelButton: {
+    backgroundColor: "#999",
+  },
+  saveButton: {
+    backgroundColor: "#2ecc71",
+  },
+  editButton: {
+    backgroundColor: "#3498db",
+  },
+  deleteButton: {
+    backgroundColor: "#e74c3c",
+  },
+  smallButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+  toggleButton: {
+    marginVertical: 10,
+    padding: 10,
+    backgroundColor: "#e2ae9c",
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  toggleButtonText: {
+    fontWeight: "700",
+    color: "#121212",
+  },
+      logoContainer: {
+    position: "absolute",
+    top: StatusBar.currentHeight ? StatusBar.currentHeight + 8 : 24,
+    left: 16,
+    zIndex: 10,
+  },
+  logoWrapper: {
+    backgroundColor: "#e2ae9c",
+    borderRadius: 50,
+    padding: 6,
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    resizeMode: "contain",
   },
 });
 

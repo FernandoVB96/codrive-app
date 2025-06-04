@@ -2,8 +2,6 @@ import React, { useState, useContext } from "react";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   Alert,
   SafeAreaView,
   StatusBar,
@@ -13,6 +11,11 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
 import { AuthContext } from "../auth/AuthContext";
+
+// Componentes reutilizables
+import InputField from "../components/InputField";
+import PrimaryButton from "../components/PrimaryButton";
+import SecondaryButton from "../components/SecondaryButton";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
@@ -72,72 +75,27 @@ const LoginScreen = () => {
           Iniciar Sesión
         </Text>
 
-        <TextInput
+        <InputField
           placeholder="Correo electrónico"
-          placeholderTextColor="#9c9c96"
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
-          style={{
-            borderWidth: 1,
-            borderColor: "#9c9c96",
-            backgroundColor: "#151920",
-            color: "#ffffff",
-            width: "100%",
-            padding: 12,
-            marginBottom: 16,
-            borderRadius: 8,
-          }}
         />
 
-        <TextInput
+        <InputField
           placeholder="Contraseña"
-          placeholderTextColor="#9c9c96"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
-          style={{
-            borderWidth: 1,
-            borderColor: "#9c9c96",
-            backgroundColor: "#151920",
-            color: "#ffffff",
-            width: "100%",
-            padding: 12,
-            marginBottom: 24,
-            borderRadius: 8,
-          }}
         />
 
-        <TouchableOpacity
-          style={{
-            backgroundColor: "#d6765e",
-            width: "100%",
-            paddingVertical: 14,
-            borderRadius: 8,
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-          onPress={handleLogin}
-        >
-          <Text style={{ color: "white", fontWeight: "600" }}>Entrar</Text>
-        </TouchableOpacity>
+        <PrimaryButton label="Entrar" onPress={handleLogin} />
 
-        <TouchableOpacity
-          style={{
-            borderColor: "#9c9c96",
-            borderWidth: 1,
-            width: "100%",
-            paddingVertical: 14,
-            borderRadius: 8,
-            alignItems: "center",
-          }}
+        <SecondaryButton
+          label="¿No tienes cuenta? Regístrate"
           onPress={() => navigation.navigate("Register")}
-        >
-          <Text style={{ color: "#e2ae9c", fontWeight: "500" }}>
-            ¿No tienes cuenta? Regístrate
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
     </SafeAreaView>
   );

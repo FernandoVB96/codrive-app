@@ -2,20 +2,28 @@ import React, { useState, useContext } from "react";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   Alert,
   SafeAreaView,
   StatusBar,
   Image,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../types/navigation";
 import { AuthContext } from "../auth/AuthContext";
+
+// Componentes reutilizables
+import InputField from "../components/InputField";
+import PrimaryButton from "../components/PrimaryButton";
+import SecondaryButton from "../components/SecondaryButton";
 
 const RegisterScreen = () => {
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { register } = useContext(AuthContext);
+
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleRegister = async () => {
     try {
@@ -68,70 +76,33 @@ const RegisterScreen = () => {
           Registrarse
         </Text>
 
-        <TextInput
+        <InputField
           placeholder="Nombre"
-          placeholderTextColor="#9c9c96"
-          style={{
-            borderWidth: 1,
-            borderColor: "#9c9c96",
-            backgroundColor: "#151920",
-            color: "#ffffff",
-            width: "100%",
-            padding: 12,
-            borderRadius: 8,
-            marginBottom: 16,
-          }}
-          onChangeText={setNombre}
           value={nombre}
+          onChangeText={setNombre}
         />
 
-        <TextInput
+        <InputField
           placeholder="Correo electrónico"
-          placeholderTextColor="#9c9c96"
-          style={{
-            borderWidth: 1,
-            borderColor: "#9c9c96",
-            backgroundColor: "#151920",
-            color: "#ffffff",
-            width: "100%",
-            padding: 12,
-            borderRadius: 8,
-            marginBottom: 16,
-          }}
-          onChangeText={setEmail}
           value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
         />
 
-        <TextInput
+        <InputField
           placeholder="Contraseña"
-          placeholderTextColor="#9c9c96"
-          secureTextEntry
-          style={{
-            borderWidth: 1,
-            borderColor: "#9c9c96",
-            backgroundColor: "#151920",
-            color: "#ffffff",
-            width: "100%",
-            padding: 12,
-            borderRadius: 8,
-            marginBottom: 24,
-          }}
-          onChangeText={setPassword}
           value={password}
+          onChangeText={setPassword}
+          secureTextEntry
         />
 
-        <TouchableOpacity
-          onPress={handleRegister}
-          style={{
-            backgroundColor: "#d6765e",
-            width: "100%",
-            paddingVertical: 14,
-            borderRadius: 8,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ color: "white", fontWeight: "600" }}>Registrarse</Text>
-        </TouchableOpacity>
+        <PrimaryButton label="Registrarse" onPress={handleRegister} />
+
+        <SecondaryButton
+          label="¿Ya tienes cuenta? Inicia sesión"
+          onPress={() => navigation.navigate("Login")}
+        />
       </View>
     </SafeAreaView>
   );

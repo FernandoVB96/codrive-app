@@ -1,39 +1,38 @@
 import React, { useState, useContext, useCallback } from "react";
 import {
-  View,
   Text,
   FlatList,
-  TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
   Alert,
   SafeAreaView,
   StatusBar,
+  StyleSheet,
+  Image,
+  View,
 } from "react-native";
 import { AuthContext } from "../auth/AuthContext";
 import { useFocusEffect } from "@react-navigation/native";
+import ViajeCard from "../components/ViajeCard";
 
 type Viaje = {
   id: number;
   origen: string;
   destino: string;
   fechaHoraSalida: string;
+  fechaHoraLlegada: string;
   plazasDisponibles: number;
-  conductor_id: number;
-  rolUsuario: "CONDUCTOR" | "PASAJERO"; // Aquí la clave
+  rolUsuario: "CONDUCTOR" | "PASAJERO";
 };
 
 const ViajeScreen = () => {
-  const { token, user } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const [viajes, setViajes] = useState<Viaje[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchMisViajes = async () => {
     try {
       const response = await fetch("http://192.168.1.130:8080/viajes/mis-viajes", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) throw new Error("No se pudieron obtener los viajes");
@@ -51,9 +50,7 @@ const ViajeScreen = () => {
     try {
       const response = await fetch(`http://192.168.1.130:8080/viajes/${viajeId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) throw new Error("Error al cancelar el viaje");
@@ -69,9 +66,7 @@ const ViajeScreen = () => {
     try {
       const response = await fetch(`http://192.168.1.130:8080/viajes/${viajeId}/abandonar`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) throw new Error("Error al abandonar el viaje");
@@ -99,34 +94,26 @@ const ViajeScreen = () => {
     return `${dia}/${mes}/${anio} ${hora}:${minutos}h`;
   };
 
-  const renderViaje = ({ item }: { item: Viaje }) => {
-    const esConductor = item.rolUsuario === "CONDUCTOR";
-
-    return (
-      <View style={styles.viajeCard}>
-        <Text style={styles.title}>
-          {item.origen} ➡️ {item.destino}
-        </Text>
-        <Text style={styles.text}>Salida: {formatearFecha(item.fechaHoraSalida)}</Text>
-        <Text style={styles.text}>Plazas disponibles: {item.plazasDisponibles}</Text>
-        <Text style={styles.rol}>{esConductor ? "Eres el conductor" : "Eres pasajero"}</Text>
-
-        {esConductor ? (
-          <TouchableOpacity style={styles.cancelButton} onPress={() => cancelarViaje(item.id)}>
-            <Text style={styles.buttonText}>Cancelar viaje</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.abandonButton} onPress={() => abandonarViaje(item.id)}>
-            <Text style={styles.buttonText}>Abandonar viaje</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    );
-  };
+  const renderViaje = ({ item }: { item: Viaje }) => (
+    <ViajeCard
+      viaje={item}
+      onCancelar={cancelarViaje}
+      onAbandonar={abandonarViaje}
+      formatearFecha={formatearFecha}
+    />
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#344356" />
+
+      {/* Logo pequeño en esquina superior izquierda */}
+      <View style={styles.logoContainer}>
+        <View style={styles.logoWrapper}>
+          <Image source={require("../../assets/logo.png")} style={styles.logo} />
+        </View>
+      </View>
+
       <Text style={styles.header}>Mis viajes</Text>
 
       {loading ? (
@@ -137,7 +124,7 @@ const ViajeScreen = () => {
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderViaje}
           ListEmptyComponent={
-            <Text style={{ color: "#e2ae9c", textAlign: "center", marginTop: 20 }}>
+            <Text style={styles.emptyText}>
               No estás en ningún viaje aún.
             </Text>
           }
@@ -154,53 +141,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: "#344356",
   },
+  logoContainer: {
+    position: "absolute",
+    top: StatusBar.currentHeight ? StatusBar.currentHeight + 8 : 24,
+    left: 16,
+    zIndex: 10,
+  },
+  logoWrapper: {
+    backgroundColor: "#e2ae9c",
+    borderRadius: 50,
+    padding: 6,
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    resizeMode: "contain",
+  },
   header: {
     fontSize: 24,
     fontWeight: "bold",
+    marginTop: 80,
     marginBottom: 16,
     textAlign: "center",
     color: "#e2ae9c",
   },
-  viajeCard: {
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#846761",
-    borderRadius: 8,
-    marginBottom: 12,
-    backgroundColor: "#151920",
-  },
-  title: {
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 8,
+  emptyText: {
     color: "#e2ae9c",
-  },
-  text: {
-    color: "#9c9c96",
-    marginBottom: 4,
-  },
-  rol: {
-    fontStyle: "italic",
-    marginBottom: 8,
-    color: "#a54740",
-  },
-  cancelButton: {
-    backgroundColor: "#a54740",
-    padding: 10,
-    borderRadius: 6,
-    marginTop: 8,
-    alignItems: "center",
-  },
-  abandonButton: {
-    backgroundColor: "#d6765e",
-    padding: 10,
-    borderRadius: 6,
-    marginTop: 8,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "600",
+    textAlign: "center",
+    marginTop: 20,
   },
 });
 

@@ -3,22 +3,25 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
   StyleSheet,
   Alert,
-  TextInput,
   StatusBar,
   Platform,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../auth/AuthContext";
 import * as Notifications from "expo-notifications";
+
+import InputField from "../components/InputField";
+import PrimaryButton from "../components/PrimaryButton";
 
 type Viaje = {
   id: number;
   origen: string;
   destino: string;
   fechaHoraSalida: string;
+  fechaHoraLlegada: string;
   plazasDisponibles: number;
 };
 
@@ -89,7 +92,6 @@ const BuscarScreen = () => {
   };
 
   useEffect(() => {
-    // Listener para notificaciones recibidas en foreground
     const subscription = Notifications.addNotificationReceivedListener(
       (notification) => {
         Alert.alert(
@@ -99,7 +101,6 @@ const BuscarScreen = () => {
       }
     );
 
-    // Listener para respuesta a notificaciones (cuando el usuario toca la notificación)
     const responseSubscription =
       Notifications.addNotificationResponseReceivedListener(() => {
         fetchViajes();
@@ -113,29 +114,26 @@ const BuscarScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#344356" />
+
+      {/* Logo en esquina superior izquierda */}
+      <View style={styles.logoContainer}>
+        <View style={styles.logoWrapper}>
+          <Image source={require("../../assets/logo.png")} style={styles.logo} />
+        </View>
+      </View>
+
       <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Origen"
-          value={origen}
-          onChangeText={setOrigen}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Destino"
-          value={destino}
-          onChangeText={setDestino}
-        />
-        <TextInput
-          style={styles.input}
+        <Text style={styles.header}>Buscar viajes</Text>
+        <InputField placeholder="Origen" value={origen} onChangeText={setOrigen} />
+        <InputField placeholder="Destino" value={destino} onChangeText={setDestino} />
+        <InputField
           placeholder="Plazas mínimas"
           value={plazas}
           keyboardType="numeric"
           onChangeText={setPlazas}
         />
-        <TouchableOpacity style={styles.button} onPress={fetchViajes}>
-          <Text style={styles.buttonText}>Buscar</Text>
-        </TouchableOpacity>
+        <PrimaryButton label="Buscar" onPress={fetchViajes} backgroundColor="#d6765e" />
       </View>
 
       <FlatList
@@ -147,15 +145,13 @@ const BuscarScreen = () => {
             <Text style={styles.title}>
               {item.origen} ➡️ {item.destino}
             </Text>
-            <Text style={styles.text}>
-              Salida: {formatearFecha(item.fechaHoraSalida)}
-            </Text>
-            <Text style={styles.text}>
-              Plazas disponibles: {item.plazasDisponibles}
-            </Text>
-            <TouchableOpacity
-              style={styles.reserveButton}
-              onPress={() => {
+            <Text style={styles.text}>Salida: {formatearFecha(item.fechaHoraSalida)}</Text>
+            <Text style={styles.text}>Llegada: {formatearFecha(item.fechaHoraLlegada)}</Text>
+            <Text style={styles.text}>Plazas disponibles: {item.plazasDisponibles}</Text>
+            <PrimaryButton
+              label="Reservar"
+              backgroundColor="#5cb85c"
+              onPress={() =>
                 Alert.alert(
                   "Confirmar reserva",
                   `¿Quieres reservar plaza para el viaje ${item.origen} -> ${item.destino}?`,
@@ -163,11 +159,9 @@ const BuscarScreen = () => {
                     { text: "No" },
                     { text: "Sí", onPress: () => crearReserva(item.id) },
                   ]
-                );
-              }}
-            >
-              <Text style={styles.buttonText}>Reservar</Text>
-            </TouchableOpacity>
+                )
+              }
+            />
           </View>
         )}
       />
@@ -181,26 +175,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#344356",
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
+  logoContainer: {
+    position: "absolute",
+    top: StatusBar.currentHeight ? StatusBar.currentHeight + 8 : 24,
+    left: 16,
+    zIndex: 10,
+  },
+  logoWrapper: {
+    backgroundColor: "#e2ae9c",
+    borderRadius: 50,
+    padding: 6,
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    resizeMode: "contain",
+  },
   form: {
     padding: 16,
-  },
-  input: {
-    backgroundColor: "#151920",
-    color: "white",
-    marginBottom: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  button: {
-    backgroundColor: "#e2ae9c",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  buttonText: {
-    fontWeight: "bold",
-    color: "#344356",
   },
   viaje: {
     backgroundColor: "#151920",
@@ -218,12 +210,12 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     marginBottom: 4,
   },
-  reserveButton: {
-    marginTop: 8,
-    backgroundColor: "#5cb85c",
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: "center",
+  header: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+    color: "#e2ae9c",
   },
 });
 
