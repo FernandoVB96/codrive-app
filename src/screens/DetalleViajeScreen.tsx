@@ -64,7 +64,7 @@ const DetalleViajeScreen = () => {
 
       try {
         const response = await fetch(
-          `http://192.168.1.130:8080/viajes/${viajeId}`,
+          `https://codrive-9fbg.onrender.com/viajes/${viajeId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

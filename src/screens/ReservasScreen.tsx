@@ -62,7 +62,7 @@ const ReservasScreen = () => {
     setLoading(true);
 
     try {
-      const reservasPasajeroUrl = `http://192.168.1.130:8080/reservas/usuario/${user.id}`;
+      const reservasPasajeroUrl = `https://codrive-9fbg.onrender.com/reservas/usuario/${user.id}`;
       const headers = { Authorization: `Bearer ${token}` };
 
       // 🟢 Fetch reservas como pasajero
@@ -80,7 +80,7 @@ const ReservasScreen = () => {
 
       // 🟡 Si es conductor, también pedimos sus viajes
       if (user.rol?.toUpperCase() === "CONDUCTOR") {
-        const conductorUrl = `http://192.168.1.130:8080/reservas/mis-viajes/reservas`;
+        const conductorUrl = `https://codrive-9fbg.onrender.com/reservas/mis-viajes/reservas`;
 
         const conductorResp = await fetch(conductorUrl, { headers });
 

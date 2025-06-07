@@ -56,7 +56,7 @@ const PublicarScreen = () => {
       const fetchVehiculos = async () => {
         if (!token || !user) return;
         try {
-          const response = await fetch(`http://192.168.1.130:8080/usuarios/${user.id}/vehiculos`, {
+          const response = await fetch(`https://codrive-9fbg.onrender.com/usuarios/${user.id}/vehiculos`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (!response.ok) throw new Error("Error al obtener vehículos");
@@ -81,7 +81,7 @@ const PublicarScreen = () => {
   const actualizarRolConductor = async () => {
     if (!token || !user) return;
     try {
-      const response = await fetch("http://192.168.1.130:8080/usuarios/actualizar", {
+      const response = await fetch("https://codrive-9fbg.onrender.com/usuarios/actualizar", {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -232,7 +232,7 @@ const handleAgregarVehiculo = async () => {
     if (!token || !user) return;
     try {
       const response = await fetch(
-        `http://192.168.1.130:8080/usuarios/${user.id}/vehiculos`,
+        `https://codrive-9fbg.onrender.com/usuarios/${user.id}/vehiculos`,
         {
           method: "POST",
           headers: {
@@ -311,7 +311,7 @@ const handlePublicar = async () => {
 
   if (!token) return;
     try {
-      const response = await fetch("http://192.168.1.130:8080/viajes", {
+      const response = await fetch("https://codrive-9fbg.onrender.com/viajes", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

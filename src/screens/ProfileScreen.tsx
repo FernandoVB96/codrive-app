@@ -56,7 +56,7 @@ useFocusEffect(
     if (!user || !token) return;
 
     setLoadingPerfil(true);
-    fetch("http://192.168.1.130:8080/usuarios/mi-perfil", {
+    fetch("https://codrive-9fbg.onrender.com/usuarios/mi-perfil", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -79,7 +79,7 @@ useFocusEffect(
   const cargarVehiculos = () => {
     if (!user || !token) return;
     setLoadingVehiculos(true);
-    fetch(`http://192.168.1.130:8080/vehiculos/conductor/${user.id}`, {
+    fetch(`https://codrive-9fbg.onrender.com/vehiculos/conductor/${user.id}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -111,7 +111,7 @@ useFocusEffect(
       return;
     }
 
-    fetch("http://192.168.1.130:8080/usuarios/actualizar", {
+    fetch("https://codrive-9fbg.onrender.com/usuarios/actualizar", {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -151,7 +151,7 @@ useFocusEffect(
       return;
     }
 
-    fetch("http://192.168.1.130:8080/vehiculos", {
+    fetch("https://codrive-9fbg.onrender.com/vehiculos", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -192,7 +192,7 @@ useFocusEffect(
         text: "Eliminar",
         style: "destructive",
         onPress: () => {
-          fetch(`http://192.168.1.130:8080/vehiculos/${id}`, {
+          fetch(`https://codrive-9fbg.onrender.com/vehiculos/${id}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },
           })
@@ -230,7 +230,7 @@ useFocusEffect(
       return;
     }
 
-    fetch(`http://192.168.1.130:8080/vehiculos/${editVehiculoId}`, {
+    fetch(`https://codrive-9fbg.onrender.com/vehiculos/${editVehiculoId}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,

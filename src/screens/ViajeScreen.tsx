@@ -40,7 +40,7 @@ const ViajeScreen = () => {
 
   const fetchMisViajes = async () => {
     try {
-      const response = await fetch("http://192.168.1.130:8080/viajes/mis-viajes", {
+      const response = await fetch("https://codrive-9fbg.onrender.com/viajes/mis-viajes", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -57,7 +57,7 @@ const ViajeScreen = () => {
 
   const cancelarViaje = async (viajeId: number) => {
     try {
-      const response = await fetch(`http://192.168.1.130:8080/viajes/${viajeId}`, {
+      const response = await fetch(`https://codrive-9fbg.onrender.com/viajes/${viajeId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -73,7 +73,7 @@ const ViajeScreen = () => {
 
   const abandonarViaje = async (viajeId: number) => {
     try {
-      const response = await fetch(`http://192.168.1.130:8080/viajes/${viajeId}/abandonar`, {
+      const response = await fetch(`https://codrive-9fbg.onrender.com/viajes/${viajeId}/abandonar`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });

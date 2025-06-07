@@ -44,7 +44,7 @@ const BuscarScreen = () => {
         return;
       }
 
-      let url = `http://192.168.1.130:8080/viajes/disponibles?origen=${encodeURIComponent(
+      let url = `https://codrive-9fbg.onrender.com/viajes/disponibles?origen=${encodeURIComponent(
         origen
       )}&destino=${encodeURIComponent(destino)}`;
       if (plazas) url += `&plazasMin=${plazasNum}`;
@@ -64,7 +64,7 @@ const BuscarScreen = () => {
 
   const crearReserva = async (viajeId: number) => {
     try {
-      const response = await fetch("http://192.168.1.130:8080/reservas", {
+      const response = await fetch("https://codrive-9fbg.onrender.com/reservas", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
