@@ -24,15 +24,28 @@ const LoginScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { login } = useContext(AuthContext);
 
-  const handleLogin = async () => {
-    try {
-      await login(email, password);
-      Alert.alert("Éxito", "Sesión iniciada correctamente");
-    } catch (err) {
-      console.error("Error en el login:", err);
-      Alert.alert("Error", "Credenciales inválidas");
-    }
-  };
+const handleLogin = async () => {
+  // Validar email con regex simple
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    Alert.alert("Error", "Ingrese un correo electrónico válido");
+    return;
+  }
+
+  if (password.length < 8) {
+    Alert.alert("Error", "La contraseña debe tener al menos 8 caracteres");
+    return;
+  }
+
+  try {
+    await login(email, password);
+    Alert.alert("Éxito", "Sesión iniciada correctamente");
+  } catch (err) {
+    console.error("Error en el login:", err);
+    Alert.alert("Error", "Credenciales inválidas");
+  }
+};
+
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#344356" }}>

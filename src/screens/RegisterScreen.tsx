@@ -25,15 +25,32 @@ const RegisterScreen = () => {
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const handleRegister = async () => {
-    try {
-      await register(nombre, email, password);
-      Alert.alert("Registro exitoso", "Has sido registrado correctamente.");
-    } catch (error) {
-      console.error(error);
-      Alert.alert("Error", "No se pudo registrar el usuario.");
-    }
-  };
+const handleRegister = async () => {
+  if (nombre.trim().length < 2 || nombre.trim().length > 50) {
+    Alert.alert("Error", "El nombre debe tener entre 2 y 50 caracteres");
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    Alert.alert("Error", "Ingrese un correo electrónico válido");
+    return;
+  }
+
+  if (password.length < 8) {
+    Alert.alert("Error", "La contraseña debe tener al menos 8 caracteres");
+    return;
+  }
+
+  try {
+    await register(nombre, email, password);
+    Alert.alert("Registro exitoso", "Has sido registrado correctamente.");
+  } catch (error) {
+    console.error(error);
+    Alert.alert("Error", "No se pudo registrar el usuario.");
+  }
+};
+
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#344356" }}>

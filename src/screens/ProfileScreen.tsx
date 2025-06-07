@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   View,
   Text,
@@ -17,7 +17,6 @@ import { AuthContext } from "../auth/AuthContext";
 
 import InputField from "../components/InputField";
 import PrimaryButton from "../components/PrimaryButton";
-import SecondaryButton from "../components/SecondaryButton";
 import { useFocusEffect } from "@react-navigation/native";
 
 
@@ -94,9 +93,21 @@ useFocusEffect(
       });
   };
 
+    const validarEmail = (email: string) => {
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regexEmail.test(email);
+  };
   const handleActualizarPerfil = () => {
-    if (!token || !nombre.trim() || !email.trim() || !telefono.trim()) {
-      Alert.alert("Completa todos los campos de perfil");
+    if (!nombre.trim() || nombre.trim().length < 2 || nombre.trim().length > 50) {
+      Alert.alert("Error", "El nombre debe tener entre 2 y 50 caracteres");
+      return;
+    }
+    if (!email.trim() || !validarEmail(email.trim())) {
+      Alert.alert("Error", "El email no tiene un formato válido");
+      return;
+    }
+    if (telefono.length > 15 || !/^\+?[0-9]*$/.test(telefono)) {
+      Alert.alert("Error", "El teléfono debe contener solo números, máximo 15 caracteres");
       return;
     }
 

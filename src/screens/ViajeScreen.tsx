@@ -123,13 +123,19 @@ const ViajeScreen = () => {
         </View>
       </View>
 
+      {/* Imagen principal */}
+      <Image source={require("../../assets/fondo.png")} style={styles.heroImage} />
+
       <Text style={styles.header}>Mis viajes</Text>
 
+    {viajes.length === 0 && (
       <PrimaryButton
         label="Buscar viajes"
         onPress={() => navigation.navigate("Buscar")}
         backgroundColor="#d6765e"
       />
+    )}
+
 
       {loading ? (
         <ActivityIndicator size="large" color="#d6765e" />
@@ -172,10 +178,17 @@ const styles = StyleSheet.create({
     height: 40,
     resizeMode: "contain",
   },
+heroImage: {
+  width: "100%",
+  height: undefined,
+  aspectRatio: 1.2, 
+  marginTop: 80,
+  marginBottom: 16,
+  resizeMode: "contain",
+},
   header: {
     fontSize: 24,
     fontWeight: "bold",
-    marginTop: 80,
     marginBottom: 16,
     textAlign: "center",
     color: "#e2ae9c",

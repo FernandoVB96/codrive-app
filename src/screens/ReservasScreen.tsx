@@ -13,7 +13,8 @@ import {
   Image,
 } from "react-native";
 import { AuthContext } from "../auth/AuthContext";
-import * as Notifications from "expo-notifications";
+// import * as Notifications from "expo-notifications";  // <-- Comentado
+
 import ReservaCard from "../components/ReservaCard";
 
 type Usuario = {
@@ -123,6 +124,7 @@ const ReservasScreen = () => {
   useEffect(() => {
     fetchReservas();
 
+    /*
     const subscription = Notifications.addNotificationReceivedListener(
       (notification) => {
         Alert.alert(
@@ -142,6 +144,7 @@ const ReservasScreen = () => {
       subscription.remove();
       responseSubscription.remove();
     };
+    */
   }, []);
 
   const onRefresh = () => {
@@ -169,11 +172,11 @@ const ReservasScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-            <View style={styles.logoContainer}>
-              <View style={styles.logoWrapper}>
-                <Image source={require("../../assets/logo.png")} style={styles.logo} />
-              </View>
-            </View>
+      <View style={styles.logoContainer}>
+        <View style={styles.logoWrapper}>
+          <Image source={require("../../assets/logo.png")} style={styles.logo} />
+        </View>
+      </View>
       <Text style={styles.header}>Reservas de viajes</Text>
       <FlatList
         data={reservas}
@@ -218,7 +221,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#e2ae9c",
   },
-      logoContainer: {
+  logoContainer: {
     position: "absolute",
     top: StatusBar.currentHeight ? StatusBar.currentHeight + 8 : 24,
     left: 16,

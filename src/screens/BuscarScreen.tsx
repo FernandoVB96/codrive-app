@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../auth/AuthContext";
-import * as Notifications from "expo-notifications";
+// import * as Notifications from "expo-notifications";  // <-- Comentado
 
 import InputField from "../components/InputField";
 import PrimaryButton from "../components/PrimaryButton";
@@ -92,6 +92,7 @@ const BuscarScreen = () => {
   };
 
   useEffect(() => {
+    /*
     const subscription = Notifications.addNotificationReceivedListener(
       (notification) => {
         Alert.alert(
@@ -110,6 +111,7 @@ const BuscarScreen = () => {
       subscription.remove();
       responseSubscription.remove();
     };
+    */
   }, []);
 
   return (

@@ -108,45 +108,43 @@ const DetalleViajeScreen = () => {
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#344356" />
+return (
+  <SafeAreaView style={styles.container}>
+    <StatusBar barStyle="light-content" backgroundColor="#344356" />
 
-      {/* Card con datos del viaje */}
-      <View style={styles.card}>
-        <Text style={styles.title}>
-          {viaje.origen} ➡️ {viaje.destino}
-        </Text>
-        <Text>Salida: {new Date(viaje.fechaHoraSalida).toLocaleString()}</Text>
-        <Text>Llegada: {new Date(viaje.fechaHoraLlegada).toLocaleString()}</Text>
-        <Text>Plazas disponibles: {viaje.plazasDisponibles}</Text>
-      </View>
+    {/* Card con datos del viaje */}
+    <View style={styles.viajeCard}>
+      <Text style={styles.title}>
+        {viaje.origen} ➡️ {viaje.destino}
+      </Text>
+      <Text style={styles.text}>Salida: {new Date(viaje.fechaHoraSalida).toLocaleString()}</Text>
+      <Text style={styles.text}>Llegada: {new Date(viaje.fechaHoraLlegada).toLocaleString()}</Text>
+      <Text style={styles.text}>Plazas disponibles: {viaje.plazasDisponibles}</Text>
+    </View>
 
-      {/* Datos del conductor */}
-      <Text style={styles.subtitle}>Conductor:</Text>
-      <View style={styles.card}>
-        <Text>{viaje.conductor.nombre} ({viaje.conductor.email})</Text>
-        {viaje.conductor.telefono && (
-          <Text>Teléfono: {viaje.conductor.telefono}</Text>
+    {/* Datos del conductor */}
+    <Text style={styles.subtitle}>Conductor:</Text>
+    <View style={styles.viajeCard}>
+      <Text style={styles.text}>{viaje.conductor.nombre} ({viaje.conductor.email})</Text>
+      {viaje.conductor.telefono && (
+        <Text style={styles.text}>Teléfono: {viaje.conductor.telefono}</Text>
+      )}
+    </View>
+
+    {/* Pasajeros */}
+    <Text style={styles.subtitle}>Pasajeros:</Text>
+    <View style={styles.viajeCard}>
+      <FlatList
+        data={viaje.pasajeros}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <Text style={styles.text}>- {item.nombre} ({item.email})</Text>
         )}
-      </View>
-
-      {/* Pasajeros */}
-      <Text style={styles.subtitle}>Pasajeros:</Text>
-      <View style={styles.card}>
-        <FlatList
-          data={viaje.pasajeros}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <Text style={styles.passengerText}>
-              - {item.nombre} ({item.email})
-            </Text>
-          )}
-          ListEmptyComponent={<Text style={styles.passengerText}>No hay pasajeros.</Text>}
-        />
-      </View>
-    </SafeAreaView>
-  );
+        ListEmptyComponent={<Text style={styles.text}>No hay pasajeros.</Text>}
+      />
+    </View>
+  </SafeAreaView>
+);
 };
 
 const styles = StyleSheet.create({
@@ -156,9 +154,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: "#344356",
   },
+  viajeCard: {
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#846761",
+    borderRadius: 8,
+    marginBottom: 12,
+    backgroundColor: "#151920",
+  },
   title: {
-    fontSize: 22,
     fontWeight: "bold",
+    fontSize: 22,
     marginBottom: 12,
     color: "#e2ae9c",
   },
@@ -168,16 +174,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#e2ae9c",
   },
-  card: {
-    backgroundColor: "rgba(226, 174, 156, 0.15)",
-    borderRadius: 10,
-    padding: 16,
-    marginTop: 8,
-  },
-  passengerText: {
-    color: "#e2ae9c",
-    fontSize: 16,
+  text: {
+    color: "#9c9c96",
     marginBottom: 4,
+    fontSize: 16,
   },
   errorText: {
     color: "red",

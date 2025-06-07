@@ -8,8 +8,9 @@ import {
   getCurrentUser,
 } from "../services/AuthService";
 
-import * as Notifications from "expo-notifications";
-import Constants from "expo-constants";
+// ❌ Notificaciones desactivadas
+// import * as Notifications from "expo-notifications";
+// import Constants from "expo-constants";
 import { Alert, Platform } from "react-native";
 
 export const AuthProvider = ({ children }: any) => {
@@ -17,61 +18,58 @@ export const AuthProvider = ({ children }: any) => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  async function registerForPushNotificationsAsync() {
-    if (!Constants.isDevice) {
-      Alert.alert(
-        "Error",
-        "Debes usar un dispositivo físico para recibir notificaciones"
-      );
-      return null;
-    }
+  // async function registerForPushNotificationsAsync() {
+  //   if (!Constants.isDevice) {
+  //     Alert.alert(
+  //       "Error",
+  //       "Debes usar un dispositivo físico para recibir notificaciones"
+  //     );
+  //     return null;
+  //   }
 
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+  //   const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  //   let finalStatus = existingStatus;
 
-    if (existingStatus !== "granted") {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
+  //   if (existingStatus !== "granted") {
+  //     const { status } = await Notifications.requestPermissionsAsync();
+  //     finalStatus = status;
+  //   }
 
-    if (finalStatus !== "granted") {
-      Alert.alert(
-        "Permiso denegado",
-        "No podrás recibir notificaciones"
-      );
-      return null;
-    }
+  //   if (finalStatus !== "granted") {
+  //     Alert.alert("Permiso denegado", "No podrás recibir notificaciones");
+  //     return null;
+  //   }
 
-    const expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
+  //   const expoPushToken = (await Notifications.getExpoPushTokenAsync()).data;
 
-    if (Platform.OS === "android") {
-      Notifications.setNotificationChannelAsync("default", {
-        name: "default",
-        importance: Notifications.AndroidImportance.MAX,
-      });
-    }
+  //   if (Platform.OS === "android") {
+  //     Notifications.setNotificationChannelAsync("default", {
+  //       name: "default",
+  //       importance: Notifications.AndroidImportance.MAX,
+  //     });
+  //   }
 
-    return expoPushToken;
-  }
+  //   return expoPushToken;
+  // }
 
-  async function enviarTokenAlBackend(expoPushToken: string, authToken: string) {
-    try {
-      const response = await fetch("http://192.168.1.130:8080/usuarios/token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + authToken,
-        },
-        body: JSON.stringify({ expoPushToken }),
-      });
+  // async function enviarTokenAlBackend(expoPushToken: string, authToken: string) {
+  //   try {
+  //     const response = await fetch("http://192.168.1.130:8080/usuarios/token", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: "Bearer " + authToken,
+  //       },
+  //       body: JSON.stringify({ expoPushToken }),
+  //     });
 
-      if (!response.ok) {
-        console.warn("Error al enviar el token al backend");
-      }
-    } catch (error) {
-      console.warn("Error enviando token:", error);
-    }
-  }
+  //     if (!response.ok) {
+  //       console.warn("Error al enviar el token al backend");
+  //     }
+  //   } catch (error) {
+  //     console.warn("Error enviando token:", error);
+  //   }
+  // }
 
   useEffect(() => {
     const loadSession = async () => {
@@ -84,11 +82,11 @@ export const AuthProvider = ({ children }: any) => {
           const currentUser = await getCurrentUser(savedToken);
           setUser(currentUser);
 
-          // Aquí pedimos token push y lo enviamos al backend
-          const expoToken = await registerForPushNotificationsAsync();
-          if (expoToken) {
-            await enviarTokenAlBackend(expoToken, savedToken);
-          }
+          // 🔇 Notificaciones desactivadas
+          // const expoToken = await registerForPushNotificationsAsync();
+          // if (expoToken) {
+          //   await enviarTokenAlBackend(expoToken, savedToken);
+          // }
         } catch (error) {
           console.log("Token inválido o error al obtener el usuario", error);
           await AsyncStorage.removeItem("token");
@@ -111,10 +109,11 @@ export const AuthProvider = ({ children }: any) => {
       const currentUser = await getCurrentUser(token);
       setUser(currentUser);
 
-      const expoToken = await registerForPushNotificationsAsync();
-      if (expoToken) {
-        await enviarTokenAlBackend(expoToken, token);
-      }
+      // 🔇 Notificaciones desactivadas
+      // const expoToken = await registerForPushNotificationsAsync();
+      // if (expoToken) {
+      //   await enviarTokenAlBackend(expoToken, token);
+      // }
     } catch (error) {
       console.error("Error al obtener usuario en login:", error);
     }
@@ -135,10 +134,11 @@ export const AuthProvider = ({ children }: any) => {
       const currentUser = await getCurrentUser(token);
       setUser(currentUser);
 
-      const expoToken = await registerForPushNotificationsAsync();
-      if (expoToken) {
-        await enviarTokenAlBackend(expoToken, token);
-      }
+      // 🔇 Notificaciones desactivadas
+      // const expoToken = await registerForPushNotificationsAsync();
+      // if (expoToken) {
+      //   await enviarTokenAlBackend(expoToken, token);
+      // }
     } catch (error) {
       console.error("Error al obtener usuario después del registro:", error);
     }
