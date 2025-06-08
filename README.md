@@ -40,12 +40,29 @@ CoDrive es la aplicación móvil desarrollada con React Native para facilitar la
 
 ## Tecnologías utilizadas
 
-- **Framework:** React Native con TypeScript.
-- **Navegación:** React Navigation.
+- **Framework:** React Native con TypeScript y Expo.
+- **Navegación:** React Navigation (Stack y Bottom Tabs).
 - **Estado global:** Context API.
-- **Fetch API:** Para interacción con backend REST.
+- **HTTP Client:** Axios para interacción con backend REST.
+- **Almacenamiento:** AsyncStorage para persistencia local.
+- **Estilos:** NativeWind (Tailwind CSS) y StyleSheet.
+- **Iconos:** React Native Vector Icons.
 - **Componentes personalizados:** Botones, tarjetas, loaders.
-- **Estilos:** StyleSheet de React Native.
+
+### Dependencias principales
+
+```json
+{
+  "@react-navigation/native": "^7.1.9",
+  "@react-navigation/bottom-tabs": "^7.3.13",
+  "@react-navigation/native-stack": "^7.3.13",
+  "@react-native-async-storage/async-storage": "^2.1.2",
+  "axios": "^1.9.0",
+  "expo": "^53.0.10",
+  "nativewind": "^4.1.23",
+  "react-native-vector-icons": "^10.2.0"
+}
+```
 
 ---
 
@@ -61,8 +78,8 @@ El diseño de la aplicación fue creado en Figma y puedes acceder al prototipo c
 
 1. Clona el repositorio:
 ```bash
-git clone https://github.com/FernandoVB96/codrive-app
-cd codrive-app
+git clone https://github.com/FernandoVB96/codrive-mobile.git
+cd codrive-mobile
 ```
 
 2. Instala las dependencias:
