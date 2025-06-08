@@ -61,8 +61,8 @@ El diseño de la aplicación fue creado en Figma y puedes acceder al prototipo c
 
 1. Clona el repositorio:
 ```bash
-git clone https://github.com/FernandoVB96/codrive-mobile.git
-cd codrive-mobile
+git clone https://github.com/FernandoVB96/codrive-app
+cd codrive-app
 ```
 
 2. Instala las dependencias:
